@@ -1,0 +1,787 @@
+/* app.wxss */
+/* 引入towxml样式文件 */
+@import "./components/towxml/style/main.wxss";
+@import "./components/towxml/style/theme/light.wxss";
+
+/* 基础样式重置 */
+view, text, input, button, image, swiper, swiper-item, scroll-view {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 全局样式 */
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #ffffff;
+  color: #333;
+  padding-bottom: 120rpx; /* 为固定按钮预留空间 */
+}
+
+/* 容器样式 */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20rpx;
+  background-color: white;
+  min-height: 100vh;
+  /* 确保容器完全覆盖页面，避免下拉时露出灰色背景 */
+  overflow: hidden;
+}
+
+/* 填满高度的样式 */
+.full-height {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.container.full-height {
+  min-height: 100vh !important;
+  padding-bottom: 0 !important;
+}
+
+.section.full-height {
+  flex: 1 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 20rpx !important;
+}
+
+/* 标题样式 */
+.title {
+  margin-bottom: 20rpx;
+  font-size: 36rpx;
+  color: #202124;
+  font-weight: bold;
+}
+
+/* 副标题样式 */
+.subtitle {
+  margin: 20rpx 0 10rpx 0;
+  font-size: 30rpx;
+  color: #202124;
+  font-weight: bold;
+}
+
+/* 提示文本样式 */
+.tip {
+  font-size: 24rpx;
+  color: #5f6368;
+  margin-bottom: 20rpx;
+  display: block;
+  line-height: 1.5;
+}
+
+/* 区块样式 */
+.section {
+  margin-bottom: 30rpx;
+  padding: 24rpx;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  background-color: white;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 表单组样式 */
+.form-group {
+  margin-bottom: 20rpx;
+  box-sizing: border-box;
+}
+
+/* 输入框样式 */
+.input-text, .input-url {
+  width: 100%;
+  padding: 0 24rpx;
+  border: 2rpx solid #1a73e8;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  background-color: white;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  margin-bottom: 30rpx; /* 增加与分析岗位按钮间的间隔 */
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1); /* 增强阴影效果，让用户一眼能看到 */
+  height: 96rpx; /* 与分析岗位按钮高度一致 */
+  line-height: 96rpx;
+  display: block;
+  vertical-align: middle;
+}
+
+/* 占位符样式 */
+.input-text::placeholder, .input-url::placeholder {
+  color: #d1d5db; /* 更淡的颜色 */
+  font-size: 26rpx;
+  line-height: 96rpx;
+  padding: 0 10rpx; /* 增加左右内边距，避免顶头 */
+  text-align: left; /* 确保文本左对齐 */
+  letter-spacing: 1rpx; /* 增加字母间距，提高可读性 */
+}
+
+.input-text:focus, .input-url:focus {
+  border-color: #1557b0;
+  box-shadow: 0 4rpx 16rpx rgba(26, 115, 232, 0.3);
+  outline: none;
+  transform: translateY(-1rpx);
+}
+
+/* 按钮样式 - 统一高度，确保与分析岗位按钮一致 */
+button.btn {
+  background-color: #1a73e8 !important;
+  color: white !important;
+  border: none !important;
+  padding: 24rpx 48rpx !important;
+  border-radius: 12rpx !important;
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 96rpx !important; /* 统一按钮高度 */
+  line-height: 1.5 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-top: 30rpx !important; /* 直接在按钮上添加顶部margin，确保与输入框的间隔 */
+  display: block !important;
+  text-align: center !important;
+}
+
+/* 次要按钮样式 */
+button.btn.secondary {
+  background-color: white !important;
+  color: #1a73e8 !important;
+  border: 2rpx solid #1a73e8 !important;
+  margin-top: 20rpx !important;
+}
+
+button.btn:hover {
+  background-color: #1557b0 !important;
+  transform: translateY(-1rpx) !important;
+  box-shadow: 0 4rpx 12rpx rgba(26, 115, 232, 0.3) !important;
+}
+
+button.btn.secondary:hover {
+  background-color: rgba(26, 115, 232, 0.05) !important;
+}
+
+button.btn:active {
+  transform: translateY(0) !important;
+}
+
+button.btn:disabled {
+  background-color: #dadce0 !important;
+  color: #5f6368 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* 文件上传区域样式 */
+.file-upload {
+  border: 2rpx dashed #1a73e8 !important;
+  border-radius: 12rpx !important;
+  padding: 60rpx 30rpx !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background-color: white !important;
+  box-sizing: border-box !important;
+  margin: 20rpx 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16rpx !important;
+  min-height: 200rpx !important;
+}
+
+.file-icon {
+  font-size: 64rpx !important;
+  margin-bottom: 10rpx !important;
+}
+
+.file-upload-label {
+  display: block !important;
+  cursor: pointer !important;
+  color: #1a73e8 !important;
+  font-weight: 600 !important;
+  font-size: 28rpx !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.file-hint {
+  font-size: 22rpx !important;
+  color: #5f6368 !important;
+  box-sizing: border-box !important;
+}
+
+.file-name {
+  margin-top: 16rpx !important;
+  font-size: 24rpx !important;
+  color: #5f6368 !important;
+  word-break: break-all !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  text-align: center !important;
+}
+
+/* 进度条样式 */
+.progress {
+  margin: 20rpx auto !important;
+  max-width: 600rpx !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+.progress-bar {
+  width: 100% !important;
+  height: 16rpx !important;
+  background-color: #e0e0e0 !important;
+  border-radius: 8rpx !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.progress-fill {
+  height: 100% !important;
+  background-color: #1a73e8 !important;
+  width: 0% !important;
+  transition: width 0.3s ease !important;
+  border-radius: 8rpx !important;
+  box-sizing: border-box !important;
+}
+
+.progress-text {
+  margin-top: 10rpx !important;
+  font-size: 24rpx !important;
+  color: #5f6368 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+/* 结果展示样式 */
+.result {
+  margin-top: 20rpx !important;
+  padding: 30rpx !important;
+  background-color: #f8f9fa !important;
+  border-radius: 12rpx !important;
+  font-size: 28rpx !important;
+  line-height: 1.8 !important;
+  box-sizing: border-box !important;
+  word-break: break-all !important;
+}
+
+/* 空状态样式 */
+.empty {
+  padding: 40rpx !important;
+  text-align: center !important;
+  color: #5f6368 !important;
+  background-color: #f8f9fa !important;
+  border-radius: 12rpx !important;
+  margin-top: 20rpx !important;
+}
+
+.empty-text {
+  font-size: 26rpx !important;
+  line-height: 1.5 !important;
+}
+
+/* 聊天容器样式 */
+.chat-container {
+  border: 2rpx solid #e0e0e0 !important;
+  border-radius: 12rpx !important;
+  overflow: hidden !important;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chat-container.full-height {
+  flex: 1 !important;
+  height: auto !important;
+}
+
+.chat-container.fixed-height {
+  height: 580px !important;
+  flex: none !important;
+}
+
+/* 聊天消息区域样式 */
+.chat-messages {
+  flex: 1 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  padding: 30rpx !important;
+  background-color: #f8f9fa !important;
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+}
+
+/* 聊天消息样式 */
+.chat-message {
+  margin-bottom: 30rpx !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  max-width: 100% !important;
+}
+
+.chat-message.bot {
+  justify-content: flex-start !important;
+}
+
+.chat-message.user {
+  justify-content: flex-end !important;
+}
+
+/* 聊天气泡样式 */
+.chat-bubble {
+  display: inline-block !important;
+  padding: 20rpx 30rpx !important;
+  border-radius: 20rpx !important;
+  max-width: 70% !important;
+  font-size: 28rpx !important;
+  line-height: 1.6 !important;
+  word-break: break-all !important;
+  box-sizing: border-box !important;
+}
+
+.chat-bubble.bot {
+  background-color: white !important;
+  color: #333 !important;
+  border: 2rpx solid #e0e0e0 !important;
+  border-bottom-left-radius: 6rpx !important;
+}
+
+.chat-bubble.user {
+  background-color: #1a73e8 !important;
+  color: white !important;
+  border-bottom-right-radius: 6rpx !important;
+}
+
+/* 聊天输入区域样式 */
+.chat-input {
+  display: flex !important;
+  padding: 20rpx !important;
+  background-color: white !important;
+  border-top: 2rpx solid #e0e0e0 !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  gap: 20rpx !important;
+}
+
+.chat-input input {
+  flex: 1 !important;
+  padding: 20rpx 30rpx !important;
+  border: 2rpx solid #dadce0 !important;
+  border-radius: 40rpx !important;
+  font-size: 28rpx !important;
+  background-color: #f8f9fa !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  margin-right: 0 !important;
+  height: 80rpx !important;
+  line-height: 40rpx !important;
+  vertical-align: middle !important;
+}
+
+.chat-input input:focus {
+  border-color: #1a73e8 !important;
+  background-color: white !important;
+  outline: none !important;
+  box-shadow: 0 0 0 4rpx rgba(26, 115, 232, 0.1) !important;
+}
+
+.send-btn {
+  width: 80rpx !important;
+  height: 80rpx !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.send-btn:hover {
+  transform: scale(1.1) !important;
+}
+
+.send-btn:active {
+  transform: scale(0.95) !important;
+}
+
+.send-btn.disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(100%) !important;
+}
+
+.send-btn.disabled:hover {
+  transform: none !important;
+  filter: grayscale(100%) !important;
+}
+
+/* 修复微信小程序button组件的默认样式 */
+button {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  text-align: inherit !important;
+  display: inline-block !important;
+}
+
+/* 修复微信小程序input组件的默认样式 */
+input {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  text-align: inherit !important;
+  display: inline-block !important;
+}
+
+/* 添加滚动条样式 */
+::-webkit-scrollbar {
+  width: 8rpx !important;
+  height: 8rpx !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+  border-radius: 4rpx !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1 !important;
+  border-radius: 4rpx !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8 !important;
+}
+
+/* 岗位信息样式 */
+.job-info {
+  margin-top: 20rpx !important;
+}
+
+.job-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 16rpx !important;
+}
+
+.job-title {
+  font-size: 32rpx !important;
+  font-weight: 700 !important;
+  color: #202124 !important;
+}
+
+.job-tag {
+  font-size: 22rpx !important;
+  padding: 6rpx 12rpx !important;
+  background-color: #e3f2fd !important;
+  color: #1976d2 !important;
+  border-radius: 16rpx !important;
+  font-weight: 500 !important;
+}
+
+.job-details {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20rpx !important;
+  flex-wrap: wrap !important;
+}
+
+.salary {
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  color: #d32f2f !important;
+}
+
+.company {
+  font-size: 26rpx !important;
+  color: #5f6368 !important;
+}
+
+/* 岗位要求样式 */
+.requirements-list {
+  margin-top: 20rpx !important;
+}
+
+.requirement-item {
+  margin-bottom: 16rpx !important;
+  overflow: hidden !important;
+}
+
+.requirement-content {
+  font-size: 26rpx !important;
+  line-height: 1.6 !important;
+  color: #333 !important;
+}
+
+/* 需求标题样式 */
+.requirement-title {
+  font-size: 28rpx !important;
+  font-weight: 700 !important;
+  color: #202124 !important;
+  margin: 20rpx 0 10rpx 0 !important;
+  padding: 12rpx 20rpx !important;
+  background-color: #e8f0fe !important;
+  border-radius: 8rpx !important;
+  line-height: 1.4 !important;
+  border-left: 4rpx solid #1a73e8 !important;
+}
+
+/* 详情内容样式 */
+.details-content {
+  font-size: 24rpx !important;
+  line-height: 1.6 !important;
+  color: #555 !important;
+}
+
+/* 可编辑岗位名称样式 */
+.editable-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12rpx !important;
+  flex: 1 !important;
+}
+
+.editable-input {
+  font-size: 32rpx !important;
+  font-weight: 700 !important;
+  color: #202124 !important;
+  padding: 8rpx 12rpx !important;
+  border: 2rpx solid #1a73e8 !important;
+  border-radius: 8rpx !important;
+  flex: 1 !important;
+  background-color: white !important;
+}
+
+.edit-icon {
+  color: #9ca3af !important;
+  transition: all 0.2s ease !important;
+  margin-left: 8rpx !important;
+}
+
+.edit-icon:hover {
+  color: #1a73e8 !important;
+}
+
+/* 岗位要求样式 */
+.requirement-header {
+  display: block !important;
+  width: 100% !important;
+  padding: 20rpx 20rpx 20rpx 30rpx !important;
+  background-color: white !important;
+  border-radius: 8rpx !important;
+  box-sizing: border-box !important;
+  border: 1rpx solid #e0e0e0 !important;
+  margin-bottom: 8rpx !important;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 技术栈与关键词的特殊样式 */
+.requirement-item:nth-child(odd) .requirement-header {
+  background-color: #f8f9ff !important;
+}
+
+/* 职位亮点的特殊样式 */
+.requirement-item:nth-child(even) .requirement-header {
+  background-color: #f0f8ff !important;
+}
+
+/* 移除下拉箭头 */
+.expand-icon {
+  display: none !important;
+}
+
+/* 移除详情内容的额外边框和样式 */
+.requirement-details {
+  display: none !important;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0 !important;
+    height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  to {
+    opacity: 1 !important;
+    height: auto !important;
+    padding-top: 16rpx !important;
+    padding-bottom: 16rpx !important;
+  }
+}
+
+/* 图标样式 */
+.icon {
+  margin-right: 8rpx !important;
+  font-size: 32rpx !important;
+  vertical-align: middle !important;
+}
+
+/* 固定在底部紧贴tab栏的按钮样式 */
+.fixed-bottom-btn {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 20rpx !important;
+  background-color: white !important;
+  border-top: 1rpx solid #e0e0e0 !important;
+  z-index: 100 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05) !important;
+  /* 确保按钮容器不随滚动变化 */
+  pointer-events: none !important;
+}
+
+.fixed-bottom-btn button.btn {
+  /* 确保一键生成全部按钮与分析岗位按钮高度一致 */
+  height: 96rpx !important;
+  pointer-events: auto !important;
+  /* 确保按钮宽度与页面跨度一致 */
+  width: 100% !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* 快捷操作样式 */
+.quick-actions {
+  margin-top: 20rpx !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16rpx !important;
+}
+
+.quick-action-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20rpx !important;
+  padding: 24rpx !important;
+  background-color: white !important;
+  border: 2rpx solid #e0e0e0 !important;
+  border-radius: 12rpx !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+.quick-action-item:hover {
+  border-color: #1a73e8 !important;
+  background-color: #f8f9ff !important;
+}
+
+.action-icon {
+  width: 56rpx !important;
+  height: 56rpx !important;
+  border-radius: 12rpx !important;
+  background-color: #e3f2fd !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 28rpx !important;
+  flex-shrink: 0 !important;
+  color: #1a73e8 !important;
+}
+
+.action-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.action-title {
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  color: #202124 !important;
+  margin-bottom: 4rpx !important;
+}
+
+.action-desc {
+  font-size: 22rpx !important;
+  color: #5f6368 !important;
+  line-height: 1.4 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+.action-arrow {
+  font-size: 28rpx !important;
+  color: #9ca3af !important;
+  flex-shrink: 0 !important;
+  position: absolute !important;
+  right: 24rpx !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* 下载简历样式 */
+.download-resume {
+  margin-top: 20rpx !important;
+  padding: 24rpx !important;
+  background-color: #f8f9ff !important;
+  border: 2rpx solid #e0e0e0 !important;
+  border-radius: 12rpx !important;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.download-resume:active {
+  background-color: #e8f0fe !important;
+  transform: translateY(2rpx) !important;
+}
+
+.download-info {
+  flex: 1 !important;
+  margin-right: 20rpx !important;
+}
+
+.download-name {
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  color: #202124 !important;
+  margin-bottom: 8rpx !important;
+}
+
+.download-size {
+  font-size: 24rpx !important;
+  color: #5f6368 !important;
+}
+
+.download-icon {
+  font-size: 48rpx !important;
+  color: #1a73e8 !important;
+}

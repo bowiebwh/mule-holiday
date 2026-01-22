@@ -1,0 +1,63 @@
+{
+  "pages": [
+    "pages/optimize/optimize",
+    "pages/interview/interview",
+    "pages/learning/learning",
+    "pages/chat/chat",
+    "pages/me/me"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "骡马假日",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#1a73e8",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/optimize/optimize",
+        "text": "智能优化",
+        "iconPath": "images/optimize.png",
+        "selectedIconPath": "images/optimize-active.png"
+      },
+      {
+        "pagePath": "pages/interview/interview",
+        "text": "面试话术",
+        "iconPath": "images/interview.png",
+        "selectedIconPath": "images/interview-active.png"
+      },
+      {
+        "pagePath": "pages/learning/learning",
+        "text": "学习计划",
+        "iconPath": "images/learning.png",
+        "selectedIconPath": "images/learning-active.png"
+      },
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "AI助手",
+        "iconPath": "images/chat.png",
+        "selectedIconPath": "images/chat-active.png"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "本骡",
+        "iconPath": "images/me.png",
+        "selectedIconPath": "images/me-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "networkTimeout": {
+    "request": 1800000,
+    "connectSocket": 1800000,
+    "uploadFile": 1800000,
+    "downloadFile": 1800000
+  },
+  "debug": true
+}

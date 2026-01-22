@@ -1,0 +1,53 @@
+<view class="container">
+  <!-- 用户信息栏 -->
+  <view class="user-info-bar">
+    <view class="user-info">
+      <image class="avatar" src="{{userInfo.avatarUrl || '/images/me-active.png'}}" mode="aspectFill"></image>
+      <text class="user-name">{{userInfo.nickname || userInfo.name}}</text>
+    </view>
+    <view class="login-btn" bindtap="onLogin">
+      <text>{{userInfo.isLogin ? '退出' : '登录'}}</text>
+    </view>
+  </view>
+
+  <!-- 历史记录标题 -->
+  <view class="section-title">历史记录</view>
+
+  <!-- 历史记录列表 -->
+  <view class="history-list">
+    <view 
+      wx:for="{{historyList}}" 
+      wx:key="id" 
+      class="history-item"
+    >
+      <text class="position-name">{{item.positionName}}</text>
+      <view 
+        class="delete-btn" 
+        bindtap="deleteHistoryItem" 
+        data-id="{{item.id}}"
+      >
+        删除
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{historyList.length === 0 && !isLoading}}" class="empty-state">
+      <text>暂无历史记录</text>
+    </view>
+
+    <!-- 加载中状态 -->
+    <view wx:if="{{isLoading}}" class="loading-state">
+      <text>正在加载...</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore && !isLoading && historyList.length > 0}}" class="load-more" bindtap="loadMore">
+      <text>加载更多</text>
+    </view>
+
+    <!-- 没有更多数据 -->
+    <view wx:if="{{!hasMore && historyList.length > 0}}" class="no-more">
+      <text>没有更多数据了</text>
+    </view>
+  </view>
+</view>

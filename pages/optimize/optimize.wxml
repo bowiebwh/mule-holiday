@@ -1,0 +1,135 @@
+<view class="container">
+  <view class="section">
+    <view class="title">输入目标岗位</view>
+    <text class="tip">请粘贴应聘职位网页URL或JD文字描述</text>
+    <view class="textarea-wrapper">
+      <textarea 
+        class="input-job" 
+        placeholder="https://www.bosszhipin.com/job/..." 
+        placeholder-style="color: #d1d5db;" 
+        bindinput="onJobUrlInput" 
+        bindfocus="onJobUrlFocus" 
+        bindblur="onJobUrlBlur" 
+        bindlinechange="onJobUrlLineChange" 
+        value="{{jobUrl}}" 
+        auto-height="{{true}}" 
+        maxlength="2000" 
+        show-confirm-bar="{{false}}"
+      />
+      <text class="clear-btn" wx:if="{{jobUrl}}" bindtap="clearJobUrl">×</text>
+      <text class="char-count">{{jobUrl.length}}/2000</text>
+    </view>
+    <button class="btn" bindtap="analyzeJob" disabled="{{!jobUrl}}" wx:if="{{isSubmitCalled}}">
+      分析岗位
+    </button>
+  </view>
+  
+  <view class="section">
+    <view class="title">上传并优化简历</view>
+    <text class="tip">支持 PDF、DOCX、TXT 格式</text>
+    <view class="file-upload" bindtap="chooseResumeFile">
+      <text class="file-icon">📄</text>
+      <text class="file-upload-label">点击上传简历</text>
+      <text class="file-hint">或拖拽文件到此处</text>
+      <text class="file-name" wx:if="{{fileName}}">{{fileName}}</text>
+    </view>
+  </view>
+  
+  <view class="section" wx:if="{{jobInfo.position_name}}">
+    <view class="job-info">
+      <!-- 可编辑的岗位名称 -->
+      <view class="job-header">
+        <view class="editable-title">
+          <input 
+            wx:if="{{isEditingPosition}}" 
+            class="editable-input" 
+            value="{{jobInfo.position_name}}" 
+            bindblur="savePosition" 
+            focus="{{isEditingPosition}}"
+            placeholder="请输入岗位名称"
+          />
+          <text 
+            wx:else 
+            class="job-title" 
+            bindtap="startEditPosition"
+          >{{jobInfo.position_name}}</text>
+          <icon class="edit-icon" type="edit" size="24" bindtap="startEditPosition" />
+        </view>
+        <text class="job-tag">{{jobInfo.job_type || '全职'}}</text>
+      </view>
+      
+      <view class="job-details" wx:if="{{jobInfo.salary}}">
+        <text class="salary">{{jobInfo.salary}}</text>
+        <text class="company">{{jobInfo.company_name || ''}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="section" wx:if="{{jobInfo.requirements.length > 0}}">
+    <view class="title">岗位信息</view>
+    <view class="requirements-list">
+      <!-- 可展开/收起的岗位要求 -->
+      <view class="requirement-item" wx:for="{{jobInfo.requirements}}" wx:key="index">
+        <!-- 标题项 -->
+        <view wx:if="{{item.isTitle}}" class="requirement-title">
+          {{item.title}}
+        </view>
+        
+        <!-- 内容项 -->
+        <view wx:else class="requirement-header">
+          <view class="requirement-content">{{item.content}}</view>
+        </view>
+      </view>
+    </view>
+    
+  </view>
+  
+  <view class="section" wx:if="{{result.beautified_resume_url || result.beautified_resume}}">
+    <view class="title">优化后的简历</view>
+    <view class="download-resume" bindtap="downloadBeautifiedResume">
+      <view class="download-info">
+        <view class="download-name">个人简历.docx</view>
+        <view class="download-size">DOCX格式</view>
+      </view>
+      <view class="download-icon">📥</view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{isSubmitCalled && (jobInfo.position_name || fileName)}}">
+    <view class="title">快捷操作</view>
+    <view class="quick-actions">
+      <view class="quick-action-item" bindtap="generateInterviewScript">
+        <view class="action-icon">💬</view>
+        <view class="action-content">
+          <view class="action-title">生成面试话术</view>
+          <view class="action-desc">基于岗位和简历生成个性化面试话术</view>
+        </view>
+        <view class="action-arrow">→</view>
+      </view>
+      <view class="quick-action-item" bindtap="generateLearningPlan">
+        <view class="action-icon">📅</view>
+        <view class="action-content">
+          <view class="action-title">生成学习计划</view>
+          <view class="action-desc">规划个性化的技能提升学习路径</view>
+        </view>
+        <view class="action-arrow">→</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 进度条 -->
+  <view class="progress" wx:if="{{isLoading}}">
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{progress}}%"></view>
+    </view>
+    <text class="progress-text">处理中... {{progress}}%</text>
+  </view>
+</view>
+
+<!-- 固定在底部紧贴tab栏的一键生成全部按钮 -->
+<view class="fixed-bottom-btn" wx:if="{{!isSubmitCalled}}">
+  <button class="btn" bindtap="submitForm" disabled="{{isLoading || !jobUrl || !fileName}}">
+    <text wx:if="{{isLoading}}">处理中...</text>
+    <text wx:else>⚡ 一键生成全部</text>
+  </button>
+</view>

@@ -1,0 +1,585 @@
+/* 页面样式 */
+page {
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  padding-bottom: 120rpx;
+}
+
+/* 页面容器样式 */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20rpx;
+  background-color: white;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 旧的页面容器样式，保持兼容 */
+.page-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20rpx;
+  background-color: white;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 标题样式 */
+.title {
+  margin-bottom: 20rpx;
+  font-size: 36rpx;
+  color: #202124;
+  font-weight: bold;
+}
+
+/* 空状态样式 */
+.empty {
+  padding: 40rpx !important;
+  text-align: center !important;
+  color: #5f6368 !important;
+  background-color: #f8f9fa !important;
+  border-radius: 12rpx !important;
+  margin-top: 20rpx !important;
+}
+
+.empty-text {
+  font-size: 26rpx !important;
+  line-height: 1.5 !important;
+  color: #5f6368 !important;
+}
+
+/* 面试话术卡片样式 */
+.interview-card {
+  background-color: white;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  margin-bottom: 30rpx;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 3rpx solid #d1e4ff;
+}
+
+/* 卡片头部样式 */
+.card-header {
+  padding: 36rpx 30rpx;
+  background-color: #e8f0fe;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  border-bottom: 1rpx solid #d1e4ff;
+  position: relative;
+  z-index: 2;
+}
+
+.card-header:hover {
+  background-color: #d0e3ff;
+}
+
+/* 卡片标题样式 */
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+  display: block;
+}
+
+/* 展开/收起箭头样式 */
+.expand-arrow {
+  font-size: 28rpx;
+  color: #666;
+  transition: transform 0.3s ease;
+  line-height: 1;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* 卡片内容样式 */
+.card-content {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.card-content.expanded {
+  padding: 30rpx;
+  max-height: none;
+}
+
+/* 话术内容容器 */
+.script-content {
+  background-color: white;
+  padding: 30rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  margin: 0;
+  min-height: auto;
+  white-space: normal;
+}
+
+/* 格式化内容容器 */
+.formatted-content {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #333;
+  white-space: normal;
+  background-color: white;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* 标题样式 */
+.md-title-1 {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #202124;
+  margin: 32rpx 0 16rpx 0;
+  display: block;
+  line-height: 1.4;
+  border-bottom: 3rpx solid #4285f4;
+  padding-bottom: 10rpx;
+}
+
+.md-title-2 {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a73e8;
+  margin: 24rpx 0 12rpx 0;
+  display: block;
+  line-height: 1.4;
+}
+
+.md-title-3 {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin: 16rpx 0 8rpx 0;
+  display: block;
+  line-height: 1.4;
+}
+
+/* 基础文本样式 */
+.md-paragraph {
+  margin: 0 0 20rpx 0;
+  line-height: 1.6;
+  text-align: justify;
+  display: block;
+}
+
+/* 粗体和斜体样式 */
+.md-bold {
+  font-weight: 600;
+  color: #333;
+}
+
+.md-italic {
+  font-style: italic;
+  color: #666;
+}
+
+/* 列表样式 */
+.md-list {
+  margin: 16rpx 0;
+  padding-left: 48rpx;
+}
+
+.md-list-item {
+  margin: 8rpx 0;
+  line-height: 1.6;
+  display: list-item;
+}
+
+/* 问题样式 - 增强视觉区分 */
+.md-question {
+  margin: 24rpx 0 16rpx 0;
+  font-weight: 700;
+  font-size: 30rpx;
+  color: #202124;
+  line-height: 1.6;
+  background-color: #f8f9fa;
+  padding: 18rpx 24rpx;
+  border-radius: 10rpx;
+  border-left: 8rpx solid #1a73e8;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 回答样式 */
+.md-answer {
+  margin: 0 0 16rpx 0;
+  line-height: 1.6;
+  padding-left: 0;
+}
+
+/* STAR法则样式 */
+.md-star-item {
+  margin: 16rpx 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.md-star-label {
+  font-weight: 700;
+  color: #d93025;
+  display: inline-block;
+  width: 100rpx;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.md-star-content {
+  flex: 1;
+  line-height: 1.6;
+}
+
+/* 代码样式 */
+.md-code {
+  font-family: Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 24rpx;
+  background-color: #f5f5f5;
+  padding: 4rpx 8rpx;
+  border-radius: 4rpx;
+  color: #d32f2f;
+  display: inline;
+}
+
+/* 链接样式 */
+.md-link {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+/* 图片样式 */
+.md-image {
+  max-width: 100%;
+  height: auto;
+  margin: 20rpx 0;
+  border-radius: 8rpx;
+  display: block;
+}
+
+/* 引用样式 */
+.md-quote {
+  margin: 20rpx 0;
+  padding: 16rpx 24rpx;
+  background-color: #e8f0fe;
+  border-left: 8rpx solid #1a73e8;
+  border-radius: 8rpx;
+  color: #1a73e8;
+  display: block;
+  line-height: 1.6;
+}
+
+/* 高亮样式 */
+.md-highlight {
+  background-color: #fff8e1;
+  padding: 4rpx 8rpx;
+  border-radius: 6rpx;
+  font-weight: 600;
+  display: inline;
+  color: #333;
+  box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.05);
+}
+
+/* mp-html组件基础样式 */
+mp-html {
+  line-height: 1.6;
+  font-size: 28rpx;
+  color: #333;
+  white-space: normal;
+  width: 100%;
+}
+
+/* 确保mp-html内部的样式正确应用 */
+mp-html h1 {
+  font-size: 36rpx;
+  border-bottom: 2px solid #4285f4;
+  padding-bottom: 8px;
+  margin-top: 40rpx;
+  margin-bottom: 20rpx;
+  color: #1a73e8;
+  font-weight: bold;
+  display: block;
+}
+
+mp-html h2 {
+  font-size: 30rpx;
+  margin-top: 30rpx;
+  margin-bottom: 16rpx;
+  color: #1a73e8;
+  font-weight: bold;
+  display: block;
+}
+
+mp-html p {
+  margin: 0 0 16rpx 0;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #333;
+  text-align: justify;
+  display: block;
+}
+
+mp-html ul {
+  margin: 0 0 16rpx 0;
+  padding-left: 40rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+mp-html li {
+  margin-bottom: 8rpx;
+  line-height: 1.6;
+  display: list-item;
+}
+
+/* 移除嵌套卡片效果，简化内部样式 */
+mp-html .section {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  max-width: 100%;
+  border: none;
+}
+
+mp-html .star-item {
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+mp-html .star-label {
+  font-weight: bold;
+  color: #d93025;
+  display: inline-block;
+  width: 120rpx;
+}
+
+mp-html .star-content {
+  line-height: 1.6;
+  color: #333;
+}
+
+mp-html .highlight {
+  background-color: #fff8e1;
+  padding: 2rpx 4rpx;
+  border-radius: 3rpx;
+  font-weight: 500;
+  display: inline;
+  color: #333;
+}
+
+mp-html .answer-title {
+  font-weight: bold;
+  margin: 16rpx 0 8rpx 0;
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+}
+
+/* 问题样式 */
+mp-html .question {
+  font-weight: bold;
+  margin: 16rpx 0 8rpx 0;
+  font-size: 30rpx;
+  color: #1a73e8;
+  display: block;
+}
+
+/* 引言样式 */
+mp-html blockquote {
+  border-left: 4rpx solid #4285f4;
+  padding: 10rpx 16rpx;
+  margin: 16rpx 0;
+  background-color: #f0f7ff;
+  border-radius: 0 4rpx 4rpx 0;
+  color: #2d3748;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* 强调样式 */
+mp-html strong {
+  font-weight: bold;
+  color: #333;
+}
+
+/* 斜体样式 */
+mp-html em {
+  font-style: italic;
+  color: #666;
+}
+
+/* 图片样式 - 优化图片显示 */
+mp-html img {
+  max-width: 100%;
+  height: auto;
+  margin: 20rpx auto;
+  border-radius: 8rpx;
+  display: block;
+}
+
+/* 列表样式优化 */
+mp-html ul, mp-html ol {
+  margin: 0 0 20rpx 0;
+  padding-left: 40rpx;
+}
+
+/* 重置默认样式 */
+mp-html div {
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+mp-html span {
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+/* 技能差距分析样式优化 */
+mp-html .skill-gap {
+  margin: 20rpx 0;
+  padding: 20rpx;
+  background-color: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+/* 学习路径规划样式优化 */
+mp-html .learning-path {
+  margin: 20rpx 0;
+}
+
+/* 阶段样式优化 */
+mp-html .stage {
+  margin: 20rpx 0;
+  padding: 20rpx;
+  background-color: #f0f7ff;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #1a73e8;
+}
+
+mp-html .stage-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #202124;
+  margin-bottom: 12rpx;
+}
+
+mp-html .stage-meta {
+  color: #5f6368;
+  font-size: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 资源项样式优化 */
+mp-html .resource-item {
+  margin-bottom: 12rpx;
+  padding: 10rpx;
+  background-color: white;
+  border-radius: 4rpx;
+}
+
+mp-html .resource-name {
+  font-weight: bold;
+  color: #1a73e8;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+mp-html .resource-link {
+  color: #5f6368;
+  font-size: 24rpx;
+  word-break: break-all;
+}
+
+/* 加载状态样式 */
+.loading {
+  padding: 40rpx;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 加载更多容器 */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
+}
+
+/* 加载更多按钮 */
+.load-more {
+  padding: 16rpx 32rpx;
+  background-color: white;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 24rpx;
+  color: #666;
+  font-size: 28rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.load-more:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* 没有更多数据 */
+.no-more {
+  padding: 40rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 一键复制按钮样式 */
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+  margin: 0 4px 10rpx auto;
+  background-color: #f5f5f5;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.copy-btn:hover {
+  background-color: #e8e8e8;
+  border-color: #1a73e8;
+}
+
+.copy-btn:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.copy-icon {
+  width: 40rpx;
+  height: 40rpx;
+  display: block;
+}
+
+/* 移除页面底部的额外padding，避免出现空白区域 */
+page {
+  padding-bottom: 15px !important;
+}

@@ -1,0 +1,117 @@
+<view class="container full-height">
+  <view class="section full-height">
+    <view class="title-container">
+      <view class="title">AI求职顾问</view>
+      <image class="new-chat-btn" src="/images/add.png" bindtap="createNewChat"></image>
+    </view>
+    <view class="chat-container fixed-height">
+      <scroll-view class="chat-messages" scroll-y="true" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="true">
+        <!-- 遍历消息列表，根据角色显示不同样式 -->
+        <view wx:for="{{messages}}" wx:key="index" class="chat-message {{item.role}}">
+          <view class="chat-bubble {{item.role}}">{{item.content}}</view>
+        </view>
+        
+        <!-- 加载中状态 -->
+        <view wx:if="{{isLoading}}" class="chat-message bot loading">
+          <view class="chat-bubble bot">
+            <view class="loading-dots">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+          </view>
+        </view>
+        
+        <view id="scroll-bottom"></view>
+      </scroll-view>
+      
+      <view class="chat-input">
+        <input 
+          class="input-text"
+          bindinput="onChatInput" 
+          value="{{inputMessage}}" 
+          bindconfirm="sendChatMessage"
+          placeholder="请输入您的问题..."
+          placeholder-class="input-placeholder"
+        />
+        <image 
+          class="send-btn {{isSendButtonEnabled ? '' : 'disabled'}}" 
+          src="/images/send.png" 
+          bindtap="sendChatMessage"
+        />
+      </view>
+    </view>
+  </view>
+  
+  <!-- 对话历史区域 - 移到了聊天容器外面 -->
+  <view class="chat-history-section">
+    <view class="chat-history-header">
+      <text class="chat-history-title">对话历史</text>
+      <text wx:if="{{isLoadingHistory}}" class="chat-history-loading">加载中...</text>
+    </view>
+    
+    <!-- 对话历史卡片列表 - 按会话组织 -->
+    <view class="chat-history-list">
+      <view 
+        wx:for="{{chatHistoryBySession}}" 
+        wx:key="session_id" 
+        class="chat-history-card"
+      >
+        <!-- 会话卡片头部：会话摘要 -->
+        <view 
+          class="chat-history-card-header" 
+          bindtap="toggleSession" 
+          data-index="{{index}}"
+        >
+          <view class="chat-history-card-summary">
+            <text class="chat-history-card-question">{{item.session_id}}</text>
+            <text class="chat-history-card-time">{{item.created_at}}</text>
+            <text class="chat-history-card-time">{{item.last_message_time}}</text>
+          </view>
+          <view class="chat-history-card-arrow {{expandedSession === index ? 'expanded' : ''}}">
+            ▼
+          </view>
+        </view>
+        
+        <!-- 会话展开内容：完整对话记录 -->
+        <view wx:if="{{expandedSession === index}}" class="chat-history-card-content">
+          <!-- 历史对话标题 -->
+          <view class="chat-history-content-title">历史对话</view>
+          
+          <!-- 加载状态 -->
+          <view wx:if="{{isLoadingSessionDetails}}" class="chat-history-loading-detail">
+            <text>加载对话详情中...</text>
+          </view>
+          
+          <!-- 完整对话记录展示 -->
+          <view wx:else class="chat-history-session-detail">
+            <!-- 遍历每轮对话 -->
+            <view wx:for="{{sessionDetails[item.session_id]}}" wx:key="id" class="chat-history-round">
+              <!-- 用户提问 -->
+              <view class="chat-history-session-message user">
+                <view class="chat-history-session-avatar user">U</view>
+                <view class="chat-history-session-bubble user">{{item.user_message}}</view>
+              </view>
+              
+              <!-- AI回复 -->
+              <view class="chat-history-session-message ai">
+                <view class="chat-history-session-avatar ai">AI</view>
+                <view class="chat-history-session-bubble ai">{{item.ai_response}}</view>
+              </view>
+            </view>
+            
+            <!-- 无对话记录提示 -->
+            <view wx:if="{{!sessionDetails[item.session_id] || sessionDetails[item.session_id].length === 0}}" class="chat-history-empty-detail">
+              <text>该会话暂无对话记录</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 无历史记录提示 -->
+      <view wx:if="{{chatHistoryBySession.length === 0 && !isLoadingHistory}}" class="chat-history-empty">
+        <text>暂无对话历史</text>
+      </view>
+    </view>
+  </view>
+</view>

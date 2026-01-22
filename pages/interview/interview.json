@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "面试话术",
+  "usingComponents": {
+    "mp-html": "../../components/mp-html/index",
+    "towxml": "../../components/towxml/towxml"
+  }
+}

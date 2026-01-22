@@ -1,0 +1,73 @@
+<view class="container">
+  <view class="section">
+    <view class="title">学习计划</view>
+    
+    <!-- 学习计划列表 -->
+    <view wx:if="{{learningList.length > 0}}">
+      <!-- 遍历学习计划列表 -->
+      <view 
+        wx:for="{{learningList}}" 
+        wx:key="id" 
+        class="interview-card"
+      >
+        <!-- 卡片头部 -->
+        <view 
+          class="card-header" 
+          bindtap="toggleLearningItem" 
+          data-id="{{item.id}}"
+        >
+          <text class="card-title">{{item.position}}</text>
+          <text 
+            class="expand-arrow {{expandedCards[item.id] ? 'expanded' : ''}}"
+          >▼</text>
+        </view>
+        
+        <!-- 卡片展开内容 -->
+        <view 
+          class="card-content {{expandedCards[item.id] ? 'expanded' : ''}}"
+        >
+          <!-- 内容加载中 -->
+          <view wx:if="{{loadingContent[item.id]}}" class="loading">
+            <text>正在加载学习计划...</text>
+          </view>
+          <!-- 使用towxml组件渲染内容 -->
+          <towxml wx:else nodes="{{item.towxmlContent}}" />
+          
+          <!-- 一键复制按钮 -->
+          <view class="copy-btn" bindtap="copyLearningContent" data-id="{{item.id}}">
+            <image src="/images/copy.png" class="copy-icon"></image>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载更多 -->
+      <view wx:if="{{hasMore}}" class="load-more-container">
+        <view 
+          class="load-more" 
+          bindtap="loadMore"
+          wx:if="{{!isLoading}}"
+        >
+          <text>加载更多</text>
+        </view>
+        <view class="loading" wx:else>
+          <text>正在加载...</text>
+        </view>
+      </view>
+      
+      <!-- 没有更多数据 -->
+      <view wx:elif="{{!hasMore && learningList.length > 0}}" class="no-more">
+        <text>没有更多数据了</text>
+      </view>
+    </view>
+    
+    <!-- 加载中状态 -->
+    <view wx:elif="{{isLoading}}" class="loading">
+      <text>正在加载学习计划...</text>
+    </view>
+    
+    <!-- 空状态 -->
+    <view wx:else class="empty">
+      <text class="empty-text">暂无学习计划，请先在智能优化页面生成</text>
+    </view>
+  </view>
+</view>
