@@ -101,7 +101,7 @@
       <view class="quick-action-item" bindtap="generateInterviewScript">
         <view class="action-icon">💬</view>
         <view class="action-content">
-          <view class="action-title">生成面试话术</view>
+          <view class="action-title">重新生成面试话术</view>
           <view class="action-desc">基于岗位和简历生成个性化面试话术</view>
         </view>
         <view class="action-arrow">→</view>
@@ -109,7 +109,7 @@
       <view class="quick-action-item" bindtap="generateLearningPlan">
         <view class="action-icon">📅</view>
         <view class="action-content">
-          <view class="action-title">生成学习计划</view>
+          <view class="action-title">重新生成学习计划</view>
           <view class="action-desc">规划个性化的技能提升学习路径</view>
         </view>
         <view class="action-arrow">→</view>

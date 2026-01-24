@@ -122,7 +122,7 @@ Page({
   fetchSessionHistory(sessionId, forceShow = false) {
     this.setData({ isLoading: true })
     
-    getChatHistory({
+    return getChatHistory({
       session_id: sessionId,
       limit: 20
     })
@@ -150,13 +150,20 @@ Page({
               scrollIntoView: 'scroll-bottom'
             })
           }
+        } else {
+          // 如果没有历史记录，初始化sessionDetails中的该会话
+          const newSessionDetails = { ...this.data.sessionDetails }
+          newSessionDetails[sessionId] = []
+          this.setData({
+            sessionDetails: newSessionDetails
+          })
         }
       })
       .catch(error => {
         console.error('获取会话历史失败:', error)
       })
       .finally(() => {
-        this.setData({ isLoading: false })
+        this.setData({ isLoading: false, isLoadingSessionDetails: false })
       })
   },
   
@@ -250,11 +257,6 @@ Page({
     this.fetchSessionHistory(sessionId, true)
       .catch(error => {
         console.error('获取会话详情失败:', error)
-      })
-      .finally(() => {
-        this.setData({
-          isLoadingSessionDetails: false
-        })
       })
   },
 

@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# WeChat Mini Program
+.DS_Store
+*.local
+
+# IDE
+.vscode/
+.idea/
+
+# Trae documents
+.trae/documents/

@@ -1,7 +1,6 @@
 {
   "navigationBarTitleText": "学习计划",
   "usingComponents": {
-    "mp-html": "../../components/mp-html/index",
     "towxml": "../../components/towxml/towxml"
   }
 }

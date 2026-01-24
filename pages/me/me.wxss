@@ -108,6 +108,43 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
+/* 为button组件添加样式，使其与原有样式一致 */
+button.login-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a73e8;
+  padding: 16rpx 40rpx;
+  border-radius: 28rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
+  position: relative;
+  z-index: 1;
+  /* 去除button默认样式 */
+  margin: 0;
+  border: none;
+  outline: none;
+}
+
+button.login-btn::after {
+  border: none;
+  border-radius: 28rpx;
+}
+
+button.login-btn:hover {
+  background: white;
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.15);
+  border-color: white;
+}
+
+button.login-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
 /* 历史记录标题样式 */
 .section-title {
   font-size: 36rpx;
@@ -208,4 +245,315 @@
   color: #9ca3af;
   font-size: 28rpx;
   background-color: transparent;
+}
+
+/* 反馈按钮样式 */
+.feedback-container {
+  margin-bottom: 50rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feedback-container:hover {
+  opacity: 0.9;
+}
+
+.feedback-title {
+  display: flex;
+  align-items: center;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 24rpx;
+  padding-left: 10rpx;
+  border-left: 6rpx solid #1a73e8;
+}
+
+.feedback-title text {
+  margin-right: 16rpx;
+}
+
+.feedback-icon {
+  width: 36rpx;
+  height: 36rpx;
+  vertical-align: middle;
+}
+
+/* 反馈表单弹窗样式 */
+.feedback-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.feedback-modal-content {
+  background-color: white;
+  border-radius: 20rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.3);
+  border: 1rpx solid #e5e7eb;
+}
+
+.feedback-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #e5e7eb;
+  background-color: #f8fafc;
+}
+
+.feedback-modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.feedback-modal-close {
+  font-size: 40rpx;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.feedback-modal-close:hover {
+  color: #6b7280;
+  background-color: #e5e7eb;
+}
+
+.feedback-form {
+  padding: 32rpx;
+}
+
+.form-item {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12rpx;
+}
+
+.form-label.required {
+  font-weight: 600;
+}
+
+.required-mark {
+  color: #ef4444;
+  margin-left: 8rpx;
+  font-size: 28rpx;
+}
+
+.feedback-type-selector {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.feedback-type-item {
+  flex: 1;
+  padding: 16rpx 20rpx;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 0;
+}
+
+.feedback-type-item.active {
+  border-color: #1a73e8;
+  background-color: #eff6ff;
+  color: #1a73e8;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-top: 8rpx;
+}
+
+.form-input {
+  width: 100%;
+  padding: 20rpx;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #374151;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  background-color: #f9fafb;
+}
+
+.form-input:focus {
+  border-color: #1a73e8;
+  outline: none;
+  background-color: white;
+  box-shadow: 0 0 0 4rpx rgba(26, 115, 232, 0.1);
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 20rpx;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #374151;
+  box-sizing: border-box;
+  resize: none;
+  transition: border-color 0.3s ease;
+  background-color: #f9fafb;
+}
+
+.form-textarea:focus {
+  border-color: #1a73e8;
+  outline: none;
+  background-color: white;
+  box-shadow: 0 0 0 4rpx rgba(26, 115, 232, 0.1);
+}
+
+.submit-btn, button.submit-btn {
+  width: 100%;
+  padding: 24rpx;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(26, 115, 232, 0.3);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.submit-btn {
+  /* 去除微信小程序button默认样式 */
+  margin: 0;
+  padding: 24rpx;
+  line-height: normal;
+}
+
+button.submit-btn::after {
+  border: none;
+  border-radius: 12rpx;
+}
+
+.submit-btn:hover, button.submit-btn:hover {
+  background-color: #2563eb;
+}
+
+.submit-btn:disabled, button.submit-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* 成功提示弹窗样式 */
+.success-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.success-modal-content {
+  background-color: white;
+  border-radius: 20rpx;
+  width: 80%;
+  max-width: 500rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.3);
+  border: 1rpx solid #e5e7eb;
+}
+
+.success-header {
+  padding: 32rpx;
+  text-align: center;
+  border-bottom: 1rpx solid #e5e7eb;
+}
+
+.success-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.success-body {
+  padding: 48rpx 32rpx;
+  text-align: center;
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-text {
+  font-size: 28rpx;
+  color: #6b7280;
+  margin-bottom: 24rpx;
+}
+
+.success-image {
+  width: 120rpx;
+  height: 120rpx;
+  margin-top: 16rpx;
+}
+
+.success-footer {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #e5e7eb;
+}
+
+.success-btn {
+  width: 100%;
+  padding: 20rpx;
+  background-color: #1a73e8;
+  color: white;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.success-btn:hover {
+  background-color: #2563eb;
 }

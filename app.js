@@ -14,7 +14,7 @@ App({
   },
 
   // 微信登录 - 必须由用户点击事件直接调用
-  login() {
+  login(userInfo = null) {
     return new Promise((resolve, reject) => {
       // 1. 调用wx.login获取code
       wx.login({
@@ -25,7 +25,8 @@ App({
               url: `${this.globalData.apiBaseUrl}/api/login`,
               method: 'POST',
               data: {
-                code: loginRes.code
+                code: loginRes.code,
+                user_info: userInfo
               },
               header: {
                 'content-type': 'application/json'
@@ -33,12 +34,12 @@ App({
               success: res => {
                 if (res.data.success) {
                   // 3. 保存token到本地存储
-                  const { access_token, refresh_token, user_info } = res.data.data
+                  const { access_token, refresh_token, user_info: backendUserInfo } = res.data.data
                   wx.setStorageSync('accessToken', access_token)
                   wx.setStorageSync('refreshToken', refresh_token)
                   
                   // 保存用户信息到globalData
-                  this.globalData.userInfo = user_info
+                  this.globalData.userInfo = backendUserInfo
                   
                   // 4. 登录成功后创建新会话
                   const api = require('./api/index')

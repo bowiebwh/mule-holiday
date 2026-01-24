@@ -5,8 +5,24 @@
       <image class="avatar" src="{{userInfo.avatarUrl || '/images/me-active.png'}}" mode="aspectFill"></image>
       <text class="user-name">{{userInfo.nickname || userInfo.name}}</text>
     </view>
-    <view class="login-btn" bindtap="onLogin">
-      <text>{{userInfo.isLogin ? '退出' : '登录'}}</text>
+    <!-- 登录按钮：未登录时显示普通按钮，已登录时显示退出按钮 -->
+    <block wx:if="{{!userInfo.isLogin}}">
+      <view class="login-btn" bindtap="onLogin">
+        <text>登录</text>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="login-btn" bindtap="onLogin">
+        <text>退出</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 反馈按钮 -->
+  <view class="feedback-container" bindtap="showFeedbackForm">
+    <view class="feedback-title">
+      <text>我有话说</text>
+      <image class="feedback-icon" src="/images/speak.png" mode="aspectFit"></image>
     </view>
   </view>
 
@@ -48,6 +64,101 @@
     <!-- 没有更多数据 -->
     <view wx:if="{{!hasMore && historyList.length > 0}}" class="no-more">
       <text>没有更多数据了</text>
+    </view>
+  </view>
+</view>
+
+<!-- 成功提示弹窗 -->
+<view wx:if="{{showSuccess}}" class="success-modal">
+  <view class="success-modal-content">
+    <view class="success-header">
+      <text class="success-title">感谢反馈</text>
+    </view>
+    <view class="success-body">
+      <view class="success-content">
+        <text class="success-text">功德+1</text>
+        <image class="success-image" src="/images/fish.png" mode="aspectFit"></image>
+      </view>
+    </view>
+    <view class="success-footer">
+      <view class="success-btn" bindtap="closeSuccessModal">确定</view>
+    </view>
+  </view>
+</view>
+
+<!-- 反馈表单弹窗 -->
+<view wx:if="{{showFeedback}}" class="feedback-modal">
+  <view class="feedback-modal-content">
+    <view class="feedback-modal-header">
+      <text class="feedback-modal-title">用户反馈</text>
+      <view class="feedback-modal-close" bindtap="closeFeedbackForm">×</view>
+    </view>
+    
+    <view class="feedback-form">
+      <!-- 反馈类型 -->
+      <view class="form-item">
+        <text class="form-label required">反馈类型<text class="required-mark">*</text></text>
+        <view class="feedback-type-selector">
+          <view class="feedback-type-item {{feedbackData.feedback_type === 'bug' ? 'active' : ''}}" bindtap="selectFeedbackType" data-type="bug">
+            <text>问题反馈</text>
+          </view>
+          <view class="feedback-type-item {{feedbackData.feedback_type === 'feature' ? 'active' : ''}}" bindtap="selectFeedbackType" data-type="feature">
+            <text>功能建议</text>
+          </view>
+          <view class="feedback-type-item {{feedbackData.feedback_type === 'other' ? 'active' : ''}}" bindtap="selectFeedbackType" data-type="other">
+            <text>其他</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 反馈标题 -->
+      <view class="form-item">
+        <text class="form-label required">反馈标题<text class="required-mark">*</text></text>
+        <input 
+          class="form-input" 
+          placeholder="请输入反馈标题" 
+          value="{{feedbackData.title}}"
+          bindinput="onFeedbackInput"
+          data-field="title"
+        />
+      </view>
+      
+      <!-- 反馈内容 -->
+      <view class="form-item">
+        <text class="form-label required">反馈内容<text class="required-mark">*</text></text>
+        <textarea 
+          class="form-textarea" 
+          placeholder="请详细描述您的问题或建议" 
+          value="{{feedbackData.content}}"
+          bindinput="onFeedbackInput"
+          data-field="content"
+          maxlength="500"
+          auto-height
+        />
+        <text class="char-count">{{feedbackData.content.length}}/500</text>
+      </view>
+      
+      <!-- 联系方式 -->
+      <view class="form-item">
+        <text class="form-label">联系方式</text>
+        <input 
+          class="form-input" 
+          placeholder="请输入邮箱或手机号（选填）" 
+          value="{{feedbackData.contact}}"
+          bindinput="onFeedbackInput"
+          data-field="contact"
+        />
+      </view>
+      
+      <!-- 提交按钮 -->
+      <view 
+        class="submit-btn" 
+        bindtap="submitFeedback"
+        style="pointer-events: {{isSubmitting ? 'none' : 'auto'}}; opacity: {{isSubmitting ? 0.6 : 1}}"
+      >
+        <text wx:if="{{isSubmitting}}">提交中...</text>
+        <text wx:else>提交</text>
+      </view>
     </view>
   </view>
 </view>

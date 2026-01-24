@@ -11,6 +11,7 @@ Page({
     file_url: '',
     isLoading: false,
     progress: 0,
+    record_id: '', // 用于保存从SSE消息中获取的真实record_id
     isSubmitCalled: false, // 用于跟踪是否调用过一键生成全部按钮
     jobInfo: {
       position_name: '',
@@ -61,9 +62,29 @@ Page({
   // 选择简历文件
   chooseResumeFile() {
     const that = this
+    
+    // 检查权限状态
+    wx.getSetting({
+      success(res) {
+        console.log('当前权限设置:', res.authSetting)
+        
+        // 调用chooseMessageFile
+        that.doChooseMessageFile()
+      },
+      fail(err) {
+        console.error('获取权限设置失败:', err)
+        // 直接尝试选择文件，让系统弹出权限请求
+        that.doChooseMessageFile()
+      }
+    })
+  },
+  
+  // 执行文件选择操作
+  doChooseMessageFile() {
+    const that = this
     wx.chooseMessageFile({
       count: 1,
-      type: 'file',
+      type: 'all', // 修改为'all'，允许选择所有类型文件
       extension: ['.pdf', '.docx', '.txt', '.md'], // 支持更多格式
       success(res) {
         const tempFile = res.tempFiles[0]
@@ -115,10 +136,26 @@ Page({
         }).catch(error => {
             clearInterval(progressInterval)
             console.error('上传简历失败:', error)
-            wx.showToast({
-              title: '上传失败，请稍后重试',
-              icon: 'none'
-            })
+            
+            // 检查是否是登录过期或未登录
+            if (error.message && error.message.includes('登录已过期') || error.message.includes('Unauthorized')) {
+              // 鉴权失败，清空上传控件显示
+              that.setData({
+                fileName: '',
+                file_key: '',
+                file_url: '',
+                resumeFile: null
+              })
+              wx.showToast({
+                title: '请先登录',
+                icon: 'none'
+              })
+            } else {
+              wx.showToast({
+                title: '上传失败，请稍后重试',
+                icon: 'none'
+              })
+            }
             that.setData({ isLoading: false })
         }).then(() => {
             // 上传成功后延迟隐藏进度条，让用户看到完整的进度动画
@@ -126,6 +163,30 @@ Page({
                 that.setData({ isLoading: false })
             }, 500)
         })
+      },
+      fail(error) {
+        console.error('选择文件失败:', error)
+        
+        // 检查是否是权限问题
+        if (error.errMsg && error.errMsg.includes('auth deny')) {
+          // 引导用户去设置页面开启权限
+          wx.showModal({
+            title: '权限提示',
+            content: '需要访问文件权限才能选择简历，是否去设置开启？',
+            success(res) {
+              if (res.confirm) {
+                wx.openSetting({
+                  success(settingRes) {
+                    console.log('设置页面返回:', settingRes.authSetting)
+                  }
+                })
+              }
+            }
+          })
+        } 
+      },
+      complete() {
+        console.log('文件选择操作完成')
       }
     })
   },
@@ -263,6 +324,11 @@ Page({
                     resultData = { ...resultData, ...message.state }
                     console.log('合并state数据后的resultData:', resultData)
                   }
+                } else if (message.type === 'record_id') {
+                  // 保存record_id到页面数据
+                  const recordId = message.record_id || ''
+                  that.setData({ record_id: recordId })
+                  console.log('保存record_id:', recordId)
                 } else if (message.type === 'end' || message.type === 'complete') {
                   // 处理完成，合并数据
                   if (message.jd_text) resultData.jd_text = message.jd_text
@@ -299,7 +365,7 @@ Page({
           // 检查响应数据是否包含我们需要的字段
           if (result && (result.jd_text || result.beautified_resume || result.interview_script || result.learning_path)) {
             // 保存结果到全局数据
-            app.globalData.jobInfo = result.jd_text
+            app.globalData.jdText = result.jd_text // 保存完整的jd_text字符串
             app.globalData.beautifiedResume = result.beautified_resume
             app.globalData.interviewScript = result.interview_script
             app.globalData.learningPlan = result.learning_path
@@ -555,10 +621,27 @@ Page({
         setTimeout(() => {
           wx.hideLoading()
           console.error('文件上传或处理失败:', error)
-          wx.showToast({
-            title: '文件上传失败，请稍后重试',
-            icon: 'none'
-          })
+          
+          // 检查是否是登录过期或未登录
+          if (error.message && error.message.includes('登录已过期') || error.message.includes('Unauthorized')) {
+            // 鉴权失败，清空上传控件显示
+            that.setData({
+              fileName: '',
+              file_key: '',
+              file_url: '',
+              resumeFile: null
+            })
+            wx.showToast({
+              title: '请先登录',
+              icon: 'none'
+            })
+          } else {
+            wx.showToast({
+              title: '文件上传失败，请稍后重试',
+              icon: 'none'
+            })
+          }
+          
           that.setData({ isLoading: false })
         }, 500)
     })
@@ -1026,7 +1109,7 @@ Page({
     
     // 从全局数据获取需要的参数
     const beautifiedResume = app.globalData.beautifiedResume || ''
-    const jdText = app.globalData.jobInfo || ''
+    const jdText = app.globalData.jdText || ''
     
     // 检查参数是否完整
     if (!beautifiedResume) {
@@ -1041,7 +1124,18 @@ Page({
     
     if (!jdText) {
       wx.showToast({
-        title: '请先分析岗位信息',
+        title: '请先获取职位描述',
+        icon: 'none'
+      })
+      clearInterval(progressInterval)
+      this.setData({ isLoading: false })
+      return
+    }
+    
+    // 检查record_id是否为空
+    if (!this.data.record_id) {
+      wx.showToast({
+        title: '获取record_id失败，请稍后重试',
         icon: 'none'
       })
       clearInterval(progressInterval)
@@ -1053,7 +1147,7 @@ Page({
     api.generateInterview({
       beautified_resume: beautifiedResume,
       jd_text: jdText,
-      record_id: 33 // 这里需要替换为实际的record_id，暂时使用示例值
+      record_id: this.data.record_id // 使用从SSE消息中获取的真实record_id
     }).then(res => {
         clearInterval(progressInterval)
         this.setData({ progress: 100 })
@@ -1126,7 +1220,7 @@ Page({
     
     // 从全局数据获取需要的参数
     const beautifiedResume = app.globalData.beautifiedResume || ''
-    const jdText = app.globalData.jobInfo || ''
+    const jdText = app.globalData.jdText || ''
     
     // 检查参数是否完整
     if (!beautifiedResume) {
@@ -1141,7 +1235,18 @@ Page({
     
     if (!jdText) {
       wx.showToast({
-        title: '请先分析岗位信息',
+        title: '请先获取职位描述',
+        icon: 'none'
+      })
+      clearInterval(progressInterval)
+      this.setData({ isLoading: false })
+      return
+    }
+    
+    // 检查record_id是否为空
+    if (!this.data.record_id) {
+      wx.showToast({
+        title: '获取record_id失败，请稍后重试',
         icon: 'none'
       })
       clearInterval(progressInterval)
@@ -1153,7 +1258,7 @@ Page({
     api.generateLearningPath({
       beautified_resume: beautifiedResume,
       jd_text: jdText,
-      record_id: 33 // 这里需要替换为实际的record_id，暂时使用示例值
+      record_id: this.data.record_id // 使用从SSE消息中获取的真实record_id
     }).then(res => {
         clearInterval(progressInterval)
         this.setData({ progress: 100 })
@@ -1245,7 +1350,7 @@ Page({
                     const message = JSON.parse(jsonStr)
                     console.log('解析到SSE消息:', message)
                     
-                    // 处理message_end类型的消息
+                    // 处理不同类型的消息
                     if (message.type === 'message_end') {
                       if (message.content && message.content.message_end && message.content.message_end.message) {
                         const errorMessage = message.content.message_end.message
@@ -1258,6 +1363,11 @@ Page({
                         hasError = true
                         break
                       }
+                    } else if (message.type === 'record_id') {
+                      // 保存record_id到页面数据
+                      const recordId = message.record_id || ''
+                      that.setData({ record_id: recordId })
+                      console.log('保存record_id:', recordId)
                     } else if (message.type === 'node_complete') {
                       // 合并node_complete事件中的state数据到result
                       if (message.state) {
@@ -1300,7 +1410,7 @@ Page({
           // 检查响应数据是否包含我们需要的字段
           if (result && (result.jd_text || result.beautified_resume || result.interview_script || result.learning_path)) {
             // 保存结果到全局数据
-            app.globalData.jobInfo = result.jd_text
+            app.globalData.jdText = result.jd_text // 保存完整的jd_text字符串
             app.globalData.beautifiedResume = result.beautified_resume
             app.globalData.interviewScript = result.interview_script
             app.globalData.learningPlan = result.learning_path
@@ -1542,11 +1652,29 @@ Page({
         clearInterval(progressInterval)
         that.setData({ progress: 100 })
         console.error('API调用失败:', error)
-        wx.showToast({
-          title: `请求失败: ${error.errMsg}`,
-          icon: 'none',
-          duration: 3000
-        })
+        
+        // 检查是否是登录过期或未登录
+        if (error.errMsg && (error.errMsg.includes('登录已过期') || error.errMsg.includes('Unauthorized') || error.errMsg.includes('请先登录'))) {
+          // 鉴权失败，清空上传控件显示
+          that.setData({
+            fileName: '',
+            file_key: '',
+            file_url: '',
+            resumeFile: null
+          })
+          wx.showToast({
+            title: '请先登录',
+            icon: 'none',
+            duration: 3000
+          })
+        } else {
+          wx.showToast({
+            title: `请求失败: ${error.errMsg}`,
+            icon: 'none',
+            duration: 3000
+          })
+        }
+        
         // 延迟隐藏进度条，让用户看到完整的进度动画
         setTimeout(() => {
           that.setData({ isLoading: false })

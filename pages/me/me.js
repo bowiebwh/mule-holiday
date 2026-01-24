@@ -13,7 +13,17 @@ Page({
     page: 1, // 当前页码
     pageSize: 20, // 每页数量
     total: 0, // 总记录数
-    hasMore: true // 是否还有更多数据
+    hasMore: true, // 是否还有更多数据
+    // 反馈相关状态
+    showFeedback: false, // 是否显示反馈表单
+    showSuccess: false, // 是否显示成功提示
+    feedbackData: {
+      feedback_type: 'bug',
+      title: '',
+      content: '',
+      contact: ''
+    },
+    isSubmitting: false // 提交状态
   },
 
   onLoad() {
@@ -227,81 +237,96 @@ Page({
     })
   },
 
-  // 登录按钮点击事件
+  // 登录/退出登录按钮点击事件
   onLogin() {
     const app = getApp()
     const isLogin = this.data.userInfo.isLogin
     
     if (isLogin) {
-        // 退出登录逻辑
-        wx.showModal({
-          title: '确认退出',
-          content: '确定要退出登录吗？',
-          success: (res) => {
-            if (res.confirm) {
-              // 调用app.js中的logout方法，清除授权状态
-              app.logout()
-              // 更新页面数据
-              this.setData({
-                userInfo: {
-                  name: '未登录',
-                  isLogin: false
-                },
-                // 清空历史记录列表
-                historyList: [],
-                total: 0,
-                hasMore: false
-              })
-              // 显示退出成功提示
-              wx.showToast({
-                title: '退出成功',
-                icon: 'success'
-              })
-            }
+      // 退出登录逻辑
+      wx.showModal({
+        title: '确认退出',
+        content: '确定要退出登录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            // 调用app.js中的logout方法，清除授权状态
+            app.logout()
+            // 更新页面数据
+            this.setData({
+              userInfo: {
+                name: '未登录',
+                isLogin: false
+              },
+              // 清空历史记录列表
+              historyList: [],
+              total: 0,
+              hasMore: false
+            })
+            // 显示退出成功提示
+            wx.showToast({
+              title: '退出成功',
+              icon: 'success'
+            })
           }
-        })
-      } else {
-      // 登录逻辑
-      // 直接调用登录，不显示加载提示，因为wx.getUserProfile会弹出授权框
-      app.login().then(res => {
-        // 登录成功
-        
-        // 获取全局用户信息
-        const globalUserInfo = app.globalData.userInfo || {};
-        console.log('登录成功后获取的全局用户信息:', globalUserInfo);
-        
-        // 更新页面用户信息
-        this.setData({
-          userInfo: {
-            name: globalUserInfo.nickname || '微信用户',
-            nickname: globalUserInfo.nickname || '',
-            avatarUrl: globalUserInfo.avatar_url || '',
-            isLogin: true
-          }
-        })
-        
-        // 显示登录成功提示
-        wx.showToast({
-          title: '登录成功',
-          icon: 'success'
-        })
-        
-        // 重置历史记录相关状态，确保能正常加载数据
-        this.setData({
-          page: 1,
-          hasMore: true,
-          isLoading: false
-        })
-        
-        // 登录成功后刷新历史记录列表
-        this.loadHistoryList()
-      }).catch(err => {
-        // 登录失败
-        console.error('登录失败:', err);
-        // 只在非用户拒绝授权的情况下显示失败提示
-        if (err.message.indexOf('用户拒绝授权') === -1) {
+        }
+      })
+    } else {
+      // 登录逻辑：使用wx.getUserProfile获取用户信息
+      wx.getUserProfile({
+        desc: '用于完善会员资料', // 声明获取用户信息的用途，必填
+        success: (res) => {
+          // 用户授权成功，获取用户信息
+          const userInfo = res.userInfo
+          console.log('用户授权成功，获取到的用户信息:', userInfo)
+          
+          // 调用登录方法，传递用户信息
+          app.login(userInfo).then(res => {
+            // 登录成功
+            
+            // 获取全局用户信息
+            const globalUserInfo = app.globalData.userInfo || {};
+            console.log('登录成功后获取的全局用户信息:', globalUserInfo);
+            
+            // 更新页面用户信息
+            this.setData({
+              userInfo: {
+                name: globalUserInfo.nickname || userInfo.nickname || '微信用户',
+                nickname: globalUserInfo.nickname || userInfo.nickname || '',
+                avatarUrl: globalUserInfo.avatar_url || userInfo.avatarUrl || '',
+                isLogin: true
+              }
+            })
+            
+            // 显示登录成功提示
+            wx.showToast({
+              title: '登录成功',
+              icon: 'success'
+            })
+            
+            // 重置历史记录相关状态，确保能正常加载数据
+            this.setData({
+              page: 1,
+              hasMore: true,
+              isLoading: false
+            })
+            
+            // 登录成功后刷新历史记录列表
+            this.loadHistoryList()
+          }).catch(err => {
+            // 登录失败
+            console.error('登录失败:', err);
+            // 显示失败提示
+            wx.showToast({
+              title: '登录失败',
+              icon: 'none'
+            });
+          })
+        },
+        fail: (err) => {
+          // 用户拒绝授权
+          console.log('用户拒绝授权:', err);
           wx.showToast({
-            title: '登录失败',
+            title: '授权失败，请允许授权后重试',
             icon: 'none'
           });
         }
@@ -312,5 +337,140 @@ Page({
   // 加载更多数据
   loadMore() {
     this.loadHistoryList()
+  },
+
+  // 显示反馈表单
+  showFeedbackForm() {
+    this.setData({
+      showFeedback: true,
+      feedbackData: {
+        feedback_type: 'bug',
+        title: '',
+        content: '',
+        contact: ''
+      }
+    })
+  },
+
+  // 关闭反馈表单
+  closeFeedbackForm() {
+    this.setData({
+      showFeedback: false
+    })
+  },
+
+  // 选择反馈类型
+  selectFeedbackType(e) {
+    const type = e.currentTarget.dataset.type
+    this.setData({
+      'feedbackData.feedback_type': type
+    })
+  },
+
+  // 处理反馈输入
+  onFeedbackInput(e) {
+    const field = e.currentTarget.dataset.field
+    const value = e.detail.value
+    this.setData({
+      [`feedbackData.${field}`]: value
+    })
+  },
+
+  // 提交反馈
+  submitFeedback() {
+    const { feedback_type, title, content, contact } = this.data.feedbackData
+
+    // 验证必填字段
+    if (!feedback_type) {
+      wx.showToast({
+        title: '请选择反馈类型',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (!title.trim()) {
+      wx.showToast({
+        title: '反馈标题不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (!content.trim()) {
+      wx.showToast({
+        title: '反馈内容不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+
+    this.setData({ isSubmitting: true })
+
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+
+    // 提交反馈
+    wx.request({
+      url: `${apiBaseUrl}/api/feedback`,
+      method: 'POST',
+      header: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      data: {
+        feedback_type,
+        title: title.trim(),
+        content: content.trim(),
+        contact: contact.trim()
+      },
+      timeout: 30000,
+      success: (res) => {
+        if (res.data.success) {
+          // 提交成功，显示自定义提示
+          this.showSuccessToast()
+          this.closeFeedbackForm()
+        } else {
+          wx.showToast({
+            title: res.data.message || '提交失败，请重试',
+            icon: 'none'
+          })
+        }
+      },
+      fail: (err) => {
+        console.error('提交反馈失败:', err)
+        wx.showToast({
+          title: '网络错误，请稍后重试',
+          icon: 'none'
+        })
+      },
+      complete: () => {
+        this.setData({ isSubmitting: false })
+      }
+    })
+  },
+
+  // 显示成功提示
+  showSuccessToast() {
+    this.setData({
+      showSuccess: true
+    })
+  },
+
+  // 关闭成功提示弹窗
+  closeSuccessModal() {
+    this.setData({
+      showSuccess: false
+    })
   }
 })
