@@ -1,7 +1,12 @@
 <view class="container">
   <view class="section">
     <view class="title">输入目标岗位</view>
-    <text class="tip">请粘贴应聘职位网页URL或JD文字描述</text>
+    <text class="tip">请自选：应聘职位的网页URL、JD文字描述、截图</text>
+    <!-- 图片上传按钮 -->
+    <view class="upload-image-btn" bindtap="chooseImage">
+      <text class="upload-icon">📷</text>
+      <text class="upload-text">上传职位截图（OCR识别）</text>
+    </view>
     <view class="textarea-wrapper">
       <textarea 
         class="input-job" 

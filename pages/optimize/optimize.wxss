@@ -25,6 +25,35 @@
   margin-bottom: 24rpx;
 }
 
+/* 图片上传按钮样式 */
+.upload-image-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 24rpx;
+  border: 2rpx dashed #d1d5db;
+  border-radius: 12rpx;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-image-btn:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.upload-icon {
+  font-size: 32rpx;
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
 /* Textarea样式 */
 .textarea-wrapper {
   position: relative;
@@ -386,5 +415,5 @@
 
 /* 移除页面底部的额外padding，避免出现空白区域 */
 page {
-  padding-bottom: 15px !important;
+  padding-bottom: 60px !important;
 }

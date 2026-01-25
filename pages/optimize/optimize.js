@@ -27,7 +27,12 @@ Page({
       beautified_resume: '',
       interview_script: '',
       learning_path: ''
-    }
+    },
+    selectedImages: [],  // 选中的图片
+    taskId: null,        // 任务 ID
+    uploadProgress: 0,   // 上传进度
+    ocrStatus: 'idle',   // idle, uploading, processing, completed
+    ocrResult: null      // OCR 结果
   },
 
   // 职位URL输入事件
@@ -41,6 +46,328 @@ Page({
   clearJobUrl() {
     this.setData({
       jobUrl: ''
+    })
+  },
+
+  // 选择图片进行OCR识别
+  chooseImage() {
+    const that = this
+    
+    wx.chooseImage({
+      count: 9,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success(res) {
+        const tempFilePaths = res.tempFilePaths
+        
+        // 保存选中的图片
+        that.setData({
+          selectedImages: tempFilePaths
+        })
+        
+        // 自动开始OCR流程
+        that.startOCR()
+      },
+      fail(err) {
+        console.error('选择图片失败:', err)
+      }
+    })
+  },
+
+  // 开始OCR流程
+  startOCR() {
+    const that = this
+    const { selectedImages, ocrStatus } = this.data
+    
+    if (selectedImages.length === 0) {
+      wx.showToast({
+        title: '请先选择图片',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 检查是否已经有OCR任务在进行
+    if (ocrStatus !== 'idle') {
+      wx.showToast({
+        title: '正在处理中，请稍后再试',
+        icon: 'none'
+      })
+      return
+    }
+    
+    wx.showLoading({
+      title: '正在处理...',
+      mask: true
+    })
+    
+    // 设置OCR状态为上传中
+    this.setData({
+      ocrStatus: 'uploading',
+      uploadProgress: 0
+    })
+    
+    // 创建任务
+    this.createTask(selectedImages.length).then(taskId => {
+      // 上传所有图片
+      return this.uploadImages(taskId, selectedImages)
+    }).then(() => {
+      // 开始轮询结果
+      return this.pollResult()
+    }).catch(err => {
+      console.error('OCR流程失败:', err)
+      wx.hideLoading()
+      wx.showToast({
+        title: '处理失败，请稍后重试',
+        icon: 'none'
+      })
+      this.setData({
+        ocrStatus: 'idle'
+      })
+    })
+  },
+
+  // 创建OCR任务
+  createTask(expectedCount) {
+    const that = this
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    const url = `${apiBaseUrl}/api/ocr/create-task`
+    
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: url,
+        method: 'POST',
+        header: {
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
+        },
+        data: {
+          expected_count: expectedCount
+        },
+        success(res) {
+          if (res.statusCode === 200 && res.data.success) {
+            const taskId = res.data.task_id
+            that.setData({
+              taskId: taskId
+            })
+            resolve(taskId)
+          } else {
+            reject(new Error('创建任务失败'))
+          }
+        },
+        fail(err) {
+          console.error('创建任务失败:', err)
+          reject(err)
+        }
+      })
+    })
+  },
+
+  // 轮询OCR结果
+  pollResult() {
+    const that = this
+    const { taskId } = this.data
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    const url = `${apiBaseUrl}/api/ocr/get-result?task_id=${taskId}`
+    
+    // 设置OCR状态为处理中
+    this.setData({
+      ocrStatus: 'processing'
+    })
+    
+    return new Promise((resolve, reject) => {
+      let pollingCount = 0
+      const maxPollingCount = 60 // 最多轮询60次（60秒）
+      
+      const pollingInterval = setInterval(() => {
+        pollingCount++
+        
+        // 检查是否超过最大轮询次数
+        if (pollingCount > maxPollingCount) {
+          clearInterval(pollingInterval)
+          wx.hideLoading()
+          wx.showToast({
+            title: '处理超时，请稍后重试',
+            icon: 'none'
+          })
+          that.setData({
+            ocrStatus: 'idle'
+          })
+          reject(new Error('处理超时'))
+          return
+        }
+        
+        wx.request({
+          url: url,
+          method: 'GET',
+          header: {
+            'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
+          },
+          success(res) {
+            if (res.statusCode === 200) {
+              const result = res.data
+              if (result.status === 'completed') {
+                clearInterval(pollingInterval)
+                that.setData({
+                  ocrStatus: 'completed',
+                  ocrResult: result.result,
+                  jobUrl: result.result.merged_text
+                })
+                wx.hideLoading()
+                wx.showToast({
+                  title: '识别完成，已提取职位描述',
+                  icon: 'success'
+                })
+                resolve()
+              } else if (result.status === 'failed') {
+                clearInterval(pollingInterval)
+                wx.hideLoading()
+                wx.showToast({
+                  title: '处理失败，请稍后重试',
+                  icon: 'none'
+                })
+                that.setData({
+                  ocrStatus: 'idle'
+                })
+                reject(new Error('处理失败'))
+              }
+            } else {
+              clearInterval(pollingInterval)
+              wx.hideLoading()
+              wx.showToast({
+                title: '获取结果失败，请稍后重试',
+                icon: 'none'
+              })
+              that.setData({
+                ocrStatus: 'idle'
+              })
+              reject(new Error('获取结果失败'))
+            }
+          },
+          fail(err) {
+            clearInterval(pollingInterval)
+            console.error('获取结果失败:', err)
+            wx.hideLoading()
+            wx.showToast({
+              title: '网络错误，请稍后重试',
+              icon: 'none'
+            })
+            that.setData({
+              ocrStatus: 'idle'
+            })
+            reject(err)
+          }
+        })
+      }, 1000) // 每1秒轮询一次
+    })
+  },
+
+  // 并发上传所有图片
+  uploadImages(taskId, selectedImages) {
+    const that = this
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    const url = `${apiBaseUrl}/api/ocr/upload`
+    const totalImages = selectedImages.length
+    let uploadedCount = 0
+    
+    const uploadPromises = selectedImages.map((imagePath, index) => {
+      return new Promise((resolve, reject) => {
+        wx.uploadFile({
+          url: url,
+          filePath: imagePath,
+          name: 'image_file',
+          formData: {
+            task_id: taskId,
+            index: index.toString()
+          },
+          header: {
+            'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
+          },
+          success(res) {
+            try {
+              const result = JSON.parse(res.data)
+              if (result.success) {
+                uploadedCount++
+                const progress = Math.round((uploadedCount / totalImages) * 100)
+                that.setData({
+                  uploadProgress: progress
+                })
+                resolve()
+              } else {
+                reject(new Error('上传图片失败'))
+              }
+            } catch (error) {
+              reject(new Error('解析上传结果失败'))
+            }
+          },
+          fail(err) {
+            console.error('上传图片失败:', err)
+            reject(err)
+          }
+        })
+      })
+    })
+    
+    return Promise.all(uploadPromises)
+  },
+
+  // 上传图片进行OCR识别
+  uploadImageForOCR: function(tempFile) {
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    const url = `${apiBaseUrl}/api/validate-image`
+    const that = this
+    
+    wx.uploadFile({
+      url: url,
+      filePath: tempFile,
+      name: 'image_file',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
+      },
+      success(res) {
+        wx.hideLoading()
+        
+        try {
+          const result = JSON.parse(res.data)
+          console.log('OCR识别结果:', result)
+          
+          if (result.valid && result.extracted_text) {
+            // 识别成功，将结果回填到输入框
+            that.setData({
+              jobUrl: result.extracted_text
+            })
+            
+            wx.showToast({
+              title: '图片识别成功，已提取职位描述',
+              icon: 'success'
+            })
+          } else {
+            // 识别失败
+            wx.showToast({
+              title: result.message || '图片识别失败',
+              icon: 'none'
+            })
+          }
+        } catch (error) {
+          console.error('解析OCR结果失败:', error)
+          wx.showToast({
+            title: '图片识别失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+      },
+      fail(err) {
+        wx.hideLoading()
+        console.error('上传图片失败:', err)
+        wx.showToast({
+          title: '上传图片失败，请稍后重试',
+          icon: 'none'
+        })
+      }
     })
   },
 
