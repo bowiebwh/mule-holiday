@@ -64,7 +64,7 @@ page {
 
 /* 卡片头部样式 */
 .card-header {
-  padding: 36rpx 30rpx;
+  padding: 20rpx 20rpx;
   background-color: #e8f0fe;
   cursor: pointer;
   display: flex;
@@ -74,6 +74,11 @@ page {
   border-bottom: 1rpx solid #d1e4ff;
   position: relative;
   z-index: 2;
+}
+
+.header-content {
+  flex: 1;
+  margin-right: 20rpx;
 }
 
 .card-header:hover {
@@ -86,6 +91,13 @@ page {
   font-weight: 600;
   color: #333;
   line-height: 1.4;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.create-time {
+  font-size: 24rpx;
+  color: #9ca3af;
   display: block;
 }
 

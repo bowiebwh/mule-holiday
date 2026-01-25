@@ -2,6 +2,19 @@
 const app = getApp()
 const towxml = require('../../components/towxml/index')
 
+// 时间格式化函数
+function formatDateTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 Page({
   data: {
     learningList: [], // 学习计划列表
@@ -83,7 +96,8 @@ Page({
               position: this.extractPositionName(item.jd_text),
               content: '', // 初始内容为空，展开时加载
               contentType: contentType, // 根据后端字段设置内容类型
-              fullData: item // 保存完整数据，便于后续使用
+              fullData: item, // 保存完整数据，便于后续使用
+              formattedTime: formatDateTime(item.created_at)
             };
           });
           

@@ -2,6 +2,19 @@
 const app = getApp()
 const { chat, getChatHistory, getChatSessions, createNewSession } = require('../../api/index')
 
+// 时间格式化函数
+function formatDateTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 Page({
   data: {
     messages: [
@@ -78,9 +91,18 @@ Page({
       .then(response => {
         console.log('会话列表API返回数据:', response)
         if (response.sessions && response.sessions.length > 0) {
+          // 对会话列表中的时间进行格式化
+          const formattedSessions = response.sessions.map(session => {
+            return {
+              ...session,
+              formattedCreatedAt: formatDateTime(session.created_at),
+              formattedLastMessageTime: formatDateTime(session.last_message_time)
+            };
+          });
+          
           // 保存会话列表
           this.setData({
-            chatHistoryBySession: response.sessions
+            chatHistoryBySession: formattedSessions
           })
           
           // 从本地存储获取当前会话ID

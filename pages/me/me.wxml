@@ -34,9 +34,12 @@
     <view 
       wx:for="{{historyList}}" 
       wx:key="id" 
-      class="history-item"
+      class="history-item {{index % 2 === 0 ? 'even' : 'odd'}}"
     >
-      <text class="position-name">{{item.positionName}}</text>
+      <view class="item-content">
+        <text class="position-name">{{item.positionName}}</text>
+        <text class="create-time">{{item.formattedTime}}</text>
+      </view>
       <view 
         class="delete-btn" 
         bindtap="deleteHistoryItem" 

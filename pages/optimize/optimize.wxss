@@ -42,7 +42,7 @@
 
 .input-job {
   width: 100%;
-  min-height: 160rpx;
+  height: 300rpx;
   padding: 24rpx 60rpx 24rpx 24rpx;
   font-size: 28rpx;
   line-height: 40rpx;
@@ -52,6 +52,7 @@
   resize: none;
   box-sizing: border-box;
   letter-spacing: 0.5rpx;
+  overflow-y: auto;
 }
 
 .input-job::placeholder {

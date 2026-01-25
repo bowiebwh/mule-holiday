@@ -1,6 +1,19 @@
 // pages/me/me.js
 const app = getApp()
 
+// 时间格式化函数
+function formatDateTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 Page({
   data: {
     userInfo: {
@@ -148,7 +161,8 @@ Page({
             return {
               id: item.id,
               positionName: positionName,
-              fullData: item
+              fullData: item,
+              formattedTime: formatDateTime(item.created_at)
             }
           })
 

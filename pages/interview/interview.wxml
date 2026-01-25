@@ -16,7 +16,10 @@
           bindtap="toggleInterviewItem" 
           data-id="{{item.id}}"
         >
-          <text class="card-title">{{item.position}}</text>
+          <view class="header-content">
+            <text class="card-title">{{item.position}}</text>
+            <text class="create-time">{{item.formattedTime}}</text>
+          </view>
           <text 
             class="expand-arrow {{expandedCards[item.id] ? 'expanded' : ''}}"
           >▼</text>

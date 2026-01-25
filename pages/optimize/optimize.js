@@ -51,7 +51,90 @@ Page({
 
   // 职位URL失去焦点
   onJobUrlBlur() {
-    // 可以添加失焦样式处理
+    // 验证URL是否有效
+    const { jobUrl } = this.data
+    if (jobUrl.trim()) {
+      // 先判断输入内容是否为URL
+      if (this.isValidUrl(jobUrl.trim())) {
+        this.validateJobUrl(jobUrl.trim())
+      }
+    }
+  },
+
+  // 判断字符串是否为有效的URL
+  isValidUrl(string) {
+    // 只检查是否包含http或https协议，不使用new URL()避免格式问题
+    return /^https?:\/\//i.test(string)
+  },
+
+  // 验证职位URL
+  validateJobUrl(jobUrl) {
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    const url = `${apiBaseUrl}/api/validate-url`
+    
+    wx.showLoading({
+      title: '验证URL中...',
+      mask: true
+    })
+    
+    wx.request({
+      url: url,
+      method: 'POST',
+      header: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
+      },
+      data: {
+        job_url: jobUrl
+      },
+      timeout: 10000,
+      success: (res) => {
+        wx.hideLoading()
+        
+        if (res.statusCode === 200 && res.data) {
+          const result = res.data
+          this.showValidationResult(result)
+        } else if (res.statusCode === 401) {
+          // 处理未授权错误
+          wx.showToast({
+            title: '未授权访问，请先登录',
+            icon: 'none'
+          })
+        } else {
+          wx.showToast({
+            title: 'URL验证失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading()
+        console.error('URL验证失败:', err)
+        wx.showToast({
+          title: '网络错误，请稍后重试',
+          icon: 'none'
+        })
+      }
+    })
+  },
+
+  // 显示验证结果
+  showValidationResult(result) {
+    const { valid, message, content_preview, estimated_time } = result
+    
+    // 只有验证失败时才显示模态框
+    if (!valid) {
+      const modalContent = '无法从该URL提取职位描述，请直接复制网页上的职位描述文本。'
+      
+      wx.showModal({
+        title: '❌ URL验证失败',
+        content: modalContent,
+        showCancel: false,
+        confirmText: '确定'
+      })
+    }
+    // 验证成功时不显示任何提示
   },
 
   // 职位URL行数变化
@@ -1302,11 +1385,25 @@ Page({
     const fileUrl = that.data.file_url
     const resumeFile = that.data.resumeFile
     
-    console.log('📤 发送的 resume_file 对象:', {
-      url: fileUrl,
-      filename: resumeFile.name,
-      file_type: 'document'
-    });
+    // 构建请求参数，根据输入类型选择正确的参数
+    let requestData = {
+      resume_file: {
+        url: fileUrl,  // 使用已上传的file_url
+        filename: resumeFile.name,
+        file_type: 'document'  // 添加文件类型
+      }
+    }
+    
+    // 判断输入类型，选择正确的参数
+    if (this.isValidUrl(jobUrl)) {
+      // 如果是URL，使用job_url参数
+      requestData.job_url = jobUrl
+    } else {
+      // 如果是职位文本描述，使用jd_text参数
+      requestData.jd_text = jobUrl
+    }
+    
+    console.log('📤 发送的请求参数:', requestData);
     
     // 使用wx.request发送JSON格式请求，符合接口文档要求
     wx.request({
@@ -1316,14 +1413,7 @@ Page({
         'content-type': 'application/json',
         'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
       },
-      data: {
-        job_url: jobUrl,
-        resume_file: {
-          url: fileUrl,  // 使用已上传的file_url
-          filename: resumeFile.name,
-          file_type: 'document'  // 添加文件类型
-        }
-      },
+      data: requestData,
       timeout: 1800000, // 30分钟超时，适应长响应时间
       success(res) {
         clearInterval(progressInterval)

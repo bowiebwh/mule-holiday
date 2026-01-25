@@ -12,7 +12,6 @@
         bindblur="onJobUrlBlur" 
         bindlinechange="onJobUrlLineChange" 
         value="{{jobUrl}}" 
-        auto-height="{{true}}" 
         maxlength="2000" 
         show-confirm-bar="{{false}}"
       />

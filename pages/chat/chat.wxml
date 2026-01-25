@@ -65,8 +65,8 @@
         >
           <view class="chat-history-card-summary">
             <text class="chat-history-card-question">{{item.session_id}}</text>
-            <text class="chat-history-card-time">{{item.created_at}}</text>
-            <text class="chat-history-card-time">{{item.last_message_time}}</text>
+            <text class="chat-history-card-time">{{item.formattedCreatedAt}}</text>
+            <text class="chat-history-card-time">{{item.formattedLastMessageTime}}</text>
           </view>
           <view class="chat-history-card-arrow {{expandedSession === index ? 'expanded' : ''}}">
             ▼
