@@ -121,6 +121,8 @@
     </view>
   </view>
   
+  
+  
   <!-- 进度条 -->
   <view class="progress" wx:if="{{isLoading}}">
     <view class="progress-bar">
@@ -135,5 +137,12 @@
   <button class="btn" bindtap="submitForm" disabled="{{isLoading || !jobUrl || !fileName}}">
     <text wx:if="{{isLoading}}">处理中...</text>
     <text wx:else>⚡ 一键生成全部</text>
+  </button>
+</view>
+
+<!-- 一键清除按钮，在一键生成全部调用完成后显示 -->
+<view class="fixed-bottom-btn" wx:if="{{isSubmitCalled}}">
+  <button class="btn btn-clear" bindtap="clearAllData">
+    <text>🗑️ 一键清除缓存</text>
   </button>
 </view>

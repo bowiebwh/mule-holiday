@@ -1,6 +1,7 @@
 // pages/chat/chat.js
 const app = getApp()
 const { chat, getChatHistory, getChatSessions, createNewSession } = require('../../api/index')
+const towxml = require('../../components/towxml/index')
 
 // 时间格式化函数
 function formatDateTime(dateString) {
@@ -13,6 +14,20 @@ function formatDateTime(dateString) {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 使用 towxml 处理 Markdown 内容
+function parseMarkdown(text) {
+  if (!text) return null;
+  
+  // 使用 towxml 将 Markdown 转换为可渲染的内容
+  try {
+    const towxmlContent = towxml(text, 'markdown');
+    return towxmlContent;
+  } catch (error) {
+    console.error('Markdown 解析失败:', error);
+    return null;
+  }
 }
 
 Page({
@@ -164,7 +179,9 @@ Page({
             const messages = []
             response.history.forEach(chat => {
               messages.push({ role: 'user', content: chat.user_message })
-              messages.push({ role: 'bot', content: chat.ai_response })
+              // 解析AI回复的Markdown内容
+              const towxmlContent = towxml(chat.ai_response, 'markdown');
+              messages.push({ role: 'bot', content: chat.ai_response, towxmlContent: towxmlContent })
             })
             
             this.setData({
@@ -234,7 +251,20 @@ Page({
   toggleSession(e) {
     const index = e.currentTarget.dataset.index
     const { expandedSession, chatHistoryBySession } = this.data
+    
+    // 边界检查，确保索引有效且会话存在
+    if (!chatHistoryBySession || !chatHistoryBySession[index]) {
+      console.error('无效的会话索引:', index)
+      return
+    }
+    
     const sessionId = chatHistoryBySession[index].session_id
+    
+    // 确保sessionId存在
+    if (!sessionId) {
+      console.error('会话缺少session_id:', chatHistoryBySession[index])
+      return
+    }
     
     // 如果点击的是当前展开的会话，直接收起
     if (expandedSession === index) {
@@ -262,7 +292,9 @@ Page({
       const messages = []
       sessionDetails[sessionId].forEach(chat => {
         messages.push({ role: 'user', content: chat.user_message })
-        messages.push({ role: 'bot', content: chat.ai_response })
+        // 解析AI回复的Markdown内容
+        const towxmlContent = towxml(chat.ai_response, 'markdown');
+        messages.push({ role: 'bot', content: chat.ai_response, towxmlContent: towxmlContent })
       })
       this.setData({
         messages: messages.length > 0 ? messages : [{ role: 'bot', content: '你好！我是你的 AI 求职顾问，可以问我任何问题 😊' }]
@@ -293,6 +325,17 @@ Page({
 
   // 发送聊天消息
   sendChatMessage() {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     const { inputMessage, messages, sessionId } = this.data
     
     if (!inputMessage.trim()) {
@@ -347,8 +390,11 @@ Page({
           reply = response.message
         }
         
+        // 解析Markdown内容
+        const towxmlContent = towxml(reply, 'markdown');
+        
         // 添加AI回复到消息列表
-        const aiMessage = { role: 'bot', content: reply }
+        const aiMessage = { role: 'bot', content: reply, towxmlContent: towxmlContent }
         const updatedMessages = [...this.data.messages, aiMessage]
         
         // 更新sessionId
@@ -389,6 +435,17 @@ Page({
   
   // 创建新对话
   createNewChat() {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     this.setData({
       isLoading: true
     })
@@ -432,5 +489,40 @@ Page({
         isLoading: false
       })
     })
+  },
+
+  // 一键复制AI回复内容
+  copyMessageContent(e) {
+    const index = e.currentTarget.dataset.index
+    const messages = this.data.messages
+    const currentMessage = messages[index]
+    
+    if (currentMessage && currentMessage.content) {
+      // 从内容中提取纯文本，保留原始格式
+      // 移除HTML标签，只保留纯文本
+      let textContent = currentMessage.content.replace(/<[^>]+>/g, '')
+      // 只清理首尾空白，保留原始换行和格式
+      textContent = textContent.trim()
+      
+      // 复制到剪贴板
+      wx.setClipboardData({
+        data: textContent,
+        success: () => {
+          wx.showToast({
+            title: '复制成功',
+            icon: 'success',
+            duration: 2000
+          })
+        },
+        fail: (err) => {
+          console.error('复制失败:', err)
+          wx.showToast({
+            title: '复制失败',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      })
+    }
   }
 })

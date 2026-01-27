@@ -76,6 +76,17 @@ Page({
 
   // 开始OCR流程
   startOCR() {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     const that = this
     const { selectedImages, ocrStatus } = this.data
     
@@ -88,12 +99,17 @@ Page({
     }
     
     // 检查是否已经有OCR任务在进行
-    if (ocrStatus !== 'idle') {
+    if (ocrStatus === 'uploading' || ocrStatus === 'processing') {
       wx.showToast({
         title: '正在处理中，请稍后再试',
         icon: 'none'
       })
       return
+    }
+    
+    // 如果是completed状态，允许重新开始OCR流程
+    if (ocrStatus === 'completed') {
+      console.log('OCR已完成，重新开始OCR流程')
     }
     
     wx.showLoading({
@@ -130,36 +146,29 @@ Page({
   // 创建OCR任务
   createTask(expectedCount) {
     const that = this
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    const url = `${apiBaseUrl}/api/ocr/create-task`
+    const api = require('../../api/index')
+    
+    console.log('开始创建OCR任务，预期图片数量:', expectedCount)
     
     return new Promise((resolve, reject) => {
-      wx.request({
-        url: url,
-        method: 'POST',
-        header: {
-          'content-type': 'application/json',
-          'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
-        },
-        data: {
-          expected_count: expectedCount
-        },
-        success(res) {
-          if (res.statusCode === 200 && res.data.success) {
-            const taskId = res.data.task_id
-            that.setData({
-              taskId: taskId
-            })
-            resolve(taskId)
-          } else {
-            reject(new Error('创建任务失败'))
-          }
-        },
-        fail(err) {
-          console.error('创建任务失败:', err)
-          reject(err)
+      api.createOCRTask({
+        expected_count: expectedCount
+      }).then(result => {
+        console.log('创建OCR任务成功:', result)
+        if (result.success && result.task_id) {
+          const taskId = result.task_id
+          that.setData({
+            taskId: taskId
+          })
+          console.log('保存任务ID:', taskId)
+          resolve(taskId)
+        } else {
+          console.error('创建任务失败:', result)
+          reject(new Error(`创建任务失败: ${result.message || '未知错误'}`))
         }
+      }).catch(err => {
+        console.error('创建任务网络失败:', err)
+        reject(err)
       })
     })
   },
@@ -168,9 +177,9 @@ Page({
   pollResult() {
     const that = this
     const { taskId } = this.data
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    const url = `${apiBaseUrl}/api/ocr/get-result?task_id=${taskId}`
+    const api = require('../../api/index')
+    
+    console.log('开始轮询OCR结果，任务ID:', taskId)
     
     // 设置OCR状态为处理中
     this.setData({
@@ -183,10 +192,12 @@ Page({
       
       const pollingInterval = setInterval(() => {
         pollingCount++
+        console.log(`轮询第${pollingCount}次，任务ID:`, taskId)
         
         // 检查是否超过最大轮询次数
         if (pollingCount > maxPollingCount) {
           clearInterval(pollingInterval)
+          console.error('处理超时，已达到最大轮询次数')
           wx.hideLoading()
           wx.showToast({
             title: '处理超时，请稍后重试',
@@ -199,66 +210,66 @@ Page({
           return
         }
         
-        wx.request({
-          url: url,
-          method: 'GET',
-          header: {
-            'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
-          },
-          success(res) {
-            if (res.statusCode === 200) {
-              const result = res.data
-              if (result.status === 'completed') {
-                clearInterval(pollingInterval)
-                that.setData({
-                  ocrStatus: 'completed',
-                  ocrResult: result.result,
-                  jobUrl: result.result.merged_text
-                })
-                wx.hideLoading()
-                wx.showToast({
-                  title: '识别完成，已提取职位描述',
-                  icon: 'success'
-                })
-                resolve()
-              } else if (result.status === 'failed') {
-                clearInterval(pollingInterval)
-                wx.hideLoading()
-                wx.showToast({
-                  title: '处理失败，请稍后重试',
-                  icon: 'none'
-                })
-                that.setData({
-                  ocrStatus: 'idle'
-                })
-                reject(new Error('处理失败'))
-              }
-            } else {
-              clearInterval(pollingInterval)
-              wx.hideLoading()
-              wx.showToast({
-                title: '获取结果失败，请稍后重试',
-                icon: 'none'
-              })
-              that.setData({
-                ocrStatus: 'idle'
-              })
-              reject(new Error('获取结果失败'))
-            }
-          },
-          fail(err) {
+        api.getOCRResult({
+          task_id: taskId
+        }).then(result => {
+          console.log('获取OCR结果:', result)
+          if (result.status === 'completed') {
             clearInterval(pollingInterval)
-            console.error('获取结果失败:', err)
+            console.log('OCR处理完成，结果:', result)
+            
+            // 根据返回结果格式设置jobUrl
+            let jobUrl = ''
+            if (typeof result.result === 'string') {
+              // 字符串格式（如示例所示）
+              jobUrl = result.result
+            } else if (result.result && result.result.merged_text) {
+              // 对象格式（兼容旧格式）
+              jobUrl = result.result.merged_text
+            } else if (result.result) {
+              // 其他格式
+              jobUrl = JSON.stringify(result.result)
+            }
+            
+            that.setData({
+              ocrStatus: 'completed',
+              ocrResult: result.result,
+              jobUrl: jobUrl
+            })
             wx.hideLoading()
             wx.showToast({
-              title: '网络错误，请稍后重试',
+              title: '识别完成，已提取职位描述',
+              icon: 'success'
+            })
+            resolve()
+          } else if (result.status === 'failed') {
+            clearInterval(pollingInterval)
+            console.error('OCR处理失败:', result)
+            wx.hideLoading()
+            wx.showToast({
+              title: '处理失败，请稍后重试',
               icon: 'none'
             })
             that.setData({
               ocrStatus: 'idle'
             })
-            reject(err)
+            reject(new Error('处理失败'))
+          } else {
+            console.log('OCR处理中，状态:', result.status)
+            // 继续轮询
           }
+        }).catch(err => {
+          clearInterval(pollingInterval)
+          console.error('获取结果失败:', err)
+          wx.hideLoading()
+          wx.showToast({
+            title: '网络错误，请稍后重试',
+            icon: 'none'
+          })
+          that.setData({
+            ocrStatus: 'idle'
+          })
+          reject(err)
         })
       }, 1000) // 每1秒轮询一次
     })
@@ -267,51 +278,51 @@ Page({
   // 并发上传所有图片
   uploadImages(taskId, selectedImages) {
     const that = this
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    const url = `${apiBaseUrl}/api/ocr/upload`
+    const api = require('../../api/index')
     const totalImages = selectedImages.length
     let uploadedCount = 0
     
+    console.log('开始上传图片，总数:', totalImages)
+    console.log('任务ID:', taskId)
+    console.log('图片路径:', selectedImages)
+    
     const uploadPromises = selectedImages.map((imagePath, index) => {
+      console.log(`开始上传第${index + 1}张图片:`, imagePath)
+      
       return new Promise((resolve, reject) => {
-        wx.uploadFile({
-          url: url,
+        api.uploadOCRImage({
           filePath: imagePath,
-          name: 'image_file',
           formData: {
             task_id: taskId,
             index: index.toString()
-          },
-          header: {
-            'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
-          },
-          success(res) {
-            try {
-              const result = JSON.parse(res.data)
-              if (result.success) {
-                uploadedCount++
-                const progress = Math.round((uploadedCount / totalImages) * 100)
-                that.setData({
-                  uploadProgress: progress
-                })
-                resolve()
-              } else {
-                reject(new Error('上传图片失败'))
-              }
-            } catch (error) {
-              reject(new Error('解析上传结果失败'))
-            }
-          },
-          fail(err) {
-            console.error('上传图片失败:', err)
-            reject(err)
           }
+        }).then(result => {
+          console.log(`第${index + 1}张图片上传成功:`, result)
+          if (result.success) {
+            uploadedCount++
+            const progress = Math.round((uploadedCount / totalImages) * 100)
+            console.log(`上传进度: ${progress}% (${uploadedCount}/${totalImages})`)
+            that.setData({
+              uploadProgress: progress
+            })
+            resolve()
+          } else {
+            console.error(`第${index + 1}张图片上传失败:`, result)
+            reject(new Error(`上传图片失败: ${result.message || '未知错误'}`))
+          }
+        }).catch(err => {
+          console.error(`第${index + 1}张图片上传网络失败:`, err)
+          reject(err)
         })
       })
     })
     
-    return Promise.all(uploadPromises)
+    return Promise.all(uploadPromises).then(() => {
+      console.log('所有图片上传完成')
+    }).catch(err => {
+      console.error('图片上传批量失败:', err)
+      throw err
+    })
   },
 
   // 上传图片进行OCR识别
@@ -371,6 +382,73 @@ Page({
     })
   },
 
+  // 批量分析OCR图片
+  batchAnalysisOCR: function(imagePaths) {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return Promise.reject(new Error('未登录'))
+    }
+    
+    const that = this
+    const api = require('../../api/index')
+    
+    // 准备请求数据
+    const requestData = {
+      image_paths: imagePaths
+    }
+    
+    // 如果是多图，添加expected_count参数
+    if (Array.isArray(imagePaths)) {
+      requestData.expected_count = imagePaths.length
+    }
+    
+    console.log('批量分析OCR请求数据:', requestData)
+    
+    return new Promise((resolve, reject) => {
+      api.batchAnalysis(requestData)
+        .then(result => {
+          console.log('批量分析OCR结果:', result)
+          if (result.success) {
+            // 识别成功，将结果回填到输入框
+            if (result.extracted_text) {
+              that.setData({
+                jobUrl: result.extracted_text
+              })
+            }
+            
+            wx.showToast({
+              title: '图片识别成功，已提取职位描述',
+              icon: 'success'
+            })
+            resolve(result)
+          } else {
+            // 识别失败
+            const errorMessage = result.message || '图片识别失败'
+            console.error('批量分析OCR失败:', errorMessage)
+            wx.showToast({
+              title: errorMessage,
+              icon: 'none'
+            })
+            reject(new Error(errorMessage))
+          }
+        })
+        .catch(err => {
+          console.error('批量分析OCR网络失败:', err)
+          wx.showToast({
+            title: '网络错误，请稍后重试',
+            icon: 'none'
+          })
+          reject(err)
+        })
+    })
+  },
+
   // 职位URL获取焦点
   onJobUrlFocus() {
     // 可以添加焦点样式处理
@@ -379,7 +457,7 @@ Page({
   // 职位URL失去焦点
   onJobUrlBlur() {
     // 验证URL是否有效
-    const { jobUrl } = this.data
+    const { jobUrl, record_id } = this.data
     if (jobUrl.trim()) {
       // 先判断输入内容是否为URL
       if (this.isValidUrl(jobUrl.trim())) {
@@ -413,8 +491,9 @@ Page({
         'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
       },
       data: {
-        job_url: jobUrl
-      },
+          job_url: jobUrl,
+          force_update: true  // 添加强制更新参数，忽略已存在的记录，强制重新生成新的内容
+        },
       timeout: 10000,
       success: (res) => {
         wx.hideLoading()
@@ -491,6 +570,17 @@ Page({
   
   // 执行文件选择操作
   doChooseMessageFile() {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     const that = this
     wx.chooseMessageFile({
       count: 1,
@@ -505,16 +595,20 @@ Page({
           progress: 0
         })
         
-        // 模拟进度更新
+        // 模拟进度更新，使用更平滑的随机进度增加，适配3分钟的处理时间
+        let currentProgress = 0
         const progressInterval = setInterval(() => {
-          that.setData(prevData => {
-            if (prevData.progress >= 90) {
-              clearInterval(progressInterval)
-              return { progress: 90 }
-            }
-            return { progress: prevData.progress + 10 }
-          })
-        }, 800)
+          // 随机增加0.5-2%的进度，使进度更新更缓慢自然
+          const increment = Math.floor(Math.random() * 2) + 1
+          currentProgress += increment
+          
+          if (currentProgress >= 96) {
+            clearInterval(progressInterval)
+            that.setData({ progress: 96 })
+          } else {
+            that.setData({ progress: currentProgress })
+          }
+        }, 2000)
         
         // 调用上传简历文件接口
         const api = require('../../api/index')
@@ -603,6 +697,17 @@ Page({
 
   // 提交表单
   submitForm() {
+    // 检查登录状态
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     const { jobUrl, file_key, file_url } = this.data
     
     if (!jobUrl || !file_key) {
@@ -618,16 +723,20 @@ Page({
       progress: 0
     })
     
-    // 模拟进度更新，调整间隔为1500ms，让用户能看到明显的进度变化
+    // 模拟进度更新，使用更平滑的随机进度增加，适配3分钟的处理时间
+    let currentProgress = 0
     const progressInterval = setInterval(() => {
-      this.setData(prevData => {
-        if (prevData.progress >= 90) {
-          clearInterval(progressInterval)
-          return { progress: 90 }
-        }
-        return { progress: prevData.progress + 10 }
-      })
-    }, 1500)
+      // 随机增加0.5-2%的进度，使进度更新更缓慢自然
+      const increment = Math.floor(Math.random() * 2) + 1
+      currentProgress += increment
+      
+      if (currentProgress >= 96) {
+        clearInterval(progressInterval)
+        this.setData({ progress: 96 })
+      } else {
+        this.setData({ progress: currentProgress })
+      }
+    }, 2000)
     
     // 调用后端API，使用已上传的file_key
     this.callApiWithFileKey(jobUrl, file_key, progressInterval)
@@ -663,6 +772,17 @@ Page({
             filename: resumeFile.name,
             file_type: 'document'
           });
+          
+          // 判断输入类型：如果是URL就传入job_url，如果是文本就传入jd_text
+          let jobData = {}
+          if (/^https?:\/\//i.test(jobUrl.trim())) {
+            console.log('输入是URL，使用job_url参数')
+            jobData.job_url = jobUrl.trim()
+          } else {
+            console.log('输入是文本描述，使用jd_text参数')
+            jobData.jd_text = jobUrl.trim()
+          }
+          
           wx.request({
               url: `${app.globalData.apiBaseUrl}/stream_run`,
               method: 'POST',
@@ -671,7 +791,7 @@ Page({
                 'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
               },
               data: {
-                job_url: jobUrl,
+                ...jobData,
                 resume_file: {
                   url: fileUrl,  // 使用上传后返回的 fileUrl
                   filename: resumeFile.name,
@@ -1072,6 +1192,37 @@ Page({
   onShow() {
     // 页面显示时的操作
     console.log('optimize页面onShow函数被调用')
+    
+    // 检查登录状态，如果未登录则清除页面数据
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      console.log('未登录，清除页面数据')
+      this.setData({
+        jobUrl: '',
+        fileName: '',
+        resumeFile: null,
+        file_key: '',
+        file_url: '',
+        isLoading: false,
+        progress: 0,
+        record_id: '',
+        isSubmitCalled: false,
+        jobInfo: {
+          position_name: '',
+          job_type: '',
+          salary: '',
+          company_name: '',
+          requirements: []
+        },
+        expandedRequirements: {},
+        result: {
+          jd_text: '',
+          beautified_resume: '',
+          interview_script: '',
+          learning_path: ''
+        }
+      })
+    }
   },
 
   onHide() {
@@ -1092,18 +1243,84 @@ Page({
     console.log('testButton函数被调用 - 结束')
   },
   
+  // 一键清除缓存数据
+  clearAllData() {
+    console.log('clearAllData函数被调用 - 开始')
+    
+    // 显示确认对话框
+    wx.showModal({
+      title: '确认清除',
+      content: '确定要清除所有缓存数据吗？这将重置当前流程，允许您开始新的一键生成全部流程。',
+      success: (res) => {
+        if (res.confirm) {
+          // 清除页面数据
+          this.setData({
+            jobUrl: '',
+            fileName: '',
+            resumeFile: null,
+            file_key: '',
+            file_url: '',
+            isLoading: false,
+            progress: 0,
+            record_id: '',
+            isSubmitCalled: false,
+            jobInfo: {
+              position_name: '',
+              job_type: '',
+              salary: '',
+              company_name: '',
+              requirements: []
+            },
+            expandedRequirements: {},
+            isEditingPosition: false,
+            result: {
+              jd_text: '',
+              beautified_resume: '',
+              interview_script: '',
+              learning_path: ''
+            },
+            selectedImages: [],
+            taskId: null,
+            uploadProgress: 0,
+            ocrStatus: 'idle',
+            ocrResult: null
+          })
+          
+          // 清除全局数据
+          const app = getApp()
+          app.globalData.jdText = ''
+          app.globalData.beautifiedResume = ''
+          app.globalData.interviewScript = ''
+          app.globalData.learningPlan = ''
+          app.globalData.jobInfo = null
+          
+          console.log('所有缓存数据已清除')
+          
+          // 显示成功提示
+          wx.showToast({
+            title: '缓存已清除，可开始新流程',
+            icon: 'success'
+          })
+        }
+      }
+    })
+    
+    console.log('clearAllData函数被调用 - 结束')
+  },
+
   // 分析岗位
   analyzeJob() {
     console.log('analyzeJob函数被调用 - 开始')
     
-    const { jobUrl } = this.data
+    const { jobUrl, record_id } = this.data
     
     console.log('jobUrl:', jobUrl)
+    console.log('record_id:', record_id)
     
     if (!jobUrl.trim()) {
       console.log('jobUrl为空，显示提示')
       wx.showToast({
-        title: '请输入职位URL',
+        title: '请输入职位URL或描述',
         icon: 'none'
       })
       return
@@ -1115,35 +1332,68 @@ Page({
       progress: 0
     })
     
+    // 显示加载提示，提供即时反馈
+    wx.showLoading({
+      title: '正在分析岗位...',
+      mask: true
+    })
+    
     // 模拟进度更新
     console.log('创建进度更新定时器')
+    let currentProgress = 0
     const progressInterval = setInterval(() => {
-      this.setData(prevData => {
-        if (prevData.progress >= 90) {
-          clearInterval(progressInterval)
-          return { progress: 90 }
-        }
-        return { progress: prevData.progress + 10 }
-      })
-    }, 800)
+      // 随机增加0.5-2%的进度，使进度更新更缓慢自然，适配3分钟的处理时间
+      const increment = Math.floor(Math.random() * 2) + 1
+      currentProgress += increment
+      
+      if (currentProgress >= 96) {
+        clearInterval(progressInterval)
+        this.setData({ progress: 96 })
+      } else {
+        this.setData({ progress: currentProgress })
+      }
+    }, 2000)
     
-    // 直接调用wx.request来测试，不使用API服务
+    // 开始调用岗位分析API
     console.log('开始调用岗位分析API...')
-    console.log('直接调用wx.request')
     
     try {
       const app = getApp()
       const apiBaseUrl = app.globalData.apiBaseUrl
       console.log('apiBaseUrl:', apiBaseUrl)
-      const url = `${apiBaseUrl}/api/extract-jd`
+      
+      // 判断输入类型：如果是URL就传入job_url，如果是文本就传入jd_text
+      let requestData = {}
+      
+      // 判断是否为URL（以http://或https://开头）
+      if (/^https?:\/\//i.test(jobUrl.trim())) {
+        console.log('输入是URL，使用job_url参数')
+        requestData.job_url = jobUrl.trim()
+      } else {
+        console.log('输入是文本描述，使用jd_text参数')
+        requestData.jd_text = jobUrl.trim()
+      }
+      
+      // 根据是否有record_id决定调用哪个接口
+      let url = ''
+      if (record_id) {
+        // 有record_id，更新已有记录
+        console.log('有record_id，调用/api/extract-jd更新记录')
+        url = `${apiBaseUrl}/api/extract-jd`
+        requestData.record_id = record_id
+      } else {
+        // 没有record_id，创建新记录
+        console.log('没有record_id，调用/stream_run创建新记录')
+        url = `${apiBaseUrl}/stream_run`
+      }
+      
       console.log('请求URL:', url)
+      console.log('请求数据:', requestData)
       
       wx.request({
         url: url,
         method: 'POST',
-        data: {
-          job_url: jobUrl
-        },
+        data: requestData,
         header: {
           'content-type': 'application/json',
           'Authorization': `Bearer ${wx.getStorageSync('accessToken')}` // 添加认证头
@@ -1156,9 +1406,38 @@ Page({
           
           clearInterval(progressInterval)
           this.setData({ progress: 100 })
+          wx.hideLoading()
+          
+          // 检查响应状态码
+          if (res.statusCode !== 200) {
+            console.error('API返回错误状态码:', res.statusCode)
+            if (res.statusCode === 401) {
+              wx.showToast({
+                title: '请先登录',
+                icon: 'none',
+                duration: 3000
+              })
+            } else {
+              wx.showToast({
+                title: '分析失败，请稍后重试',
+                icon: 'none'
+              })
+            }
+            return
+          }
+          
+          // 处理响应数据
+          const result = res.data
+          
+          // 如果是创建新记录，保存record_id
+          if (!record_id && result.record_id) {
+            console.log('保存新创建的record_id:', result.record_id)
+            this.setData({
+              record_id: result.record_id
+            })
+          }
           
           // 格式化岗位信息
-          const result = res.data
           let jobInfo = {
             position_name: '未获取到岗位名称',
             job_type: '全职',
@@ -1173,6 +1452,10 @@ Page({
             this.setData({
               'result.jd_text': result.jd_text
             })
+            
+            // 更新全局数据中的jdText，确保重新生成时使用最新的职位描述
+            const app = getApp()
+            app.globalData.jdText = result.jd_text
             
             const jdText = result.jd_text
             
@@ -1353,19 +1636,38 @@ Page({
             expandedRequirements: expandedRequirements
           })
           
-          wx.showToast({
-            title: '岗位分析完成',
-            icon: 'success'
-          })
+          // 根据操作类型显示不同的提示
+          if (result.action === 'updated') {
+            wx.showToast({
+              title: '岗位信息已更新',
+              icon: 'success'
+            })
+          } else {
+            wx.showToast({
+              title: '岗位分析完成',
+              icon: 'success'
+            })
+          }
         },
         fail: (err) => {
           console.error('wx.request失败回调执行:', err)
           console.error('错误详情:', JSON.stringify(err))
           clearInterval(progressInterval)
-          wx.showToast({
-            title: '分析失败，请稍后重试',
-            icon: 'none'
-          })
+          wx.hideLoading()
+          
+          // 检查是否是登录过期或未登录
+          if (err.statusCode === 401 || (err.errMsg && (err.errMsg.includes('登录已过期') || err.errMsg.includes('Unauthorized') || err.errMsg.includes('请先登录')))) {
+            wx.showToast({
+              title: '请先登录',
+              icon: 'none',
+              duration: 3000
+            })
+          } else {
+            wx.showToast({
+              title: '分析失败，请稍后重试',
+              icon: 'none'
+            })
+          }
         },
         complete: () => {
           console.log('wx.request完成回调执行')
@@ -1376,6 +1678,7 @@ Page({
       console.error('调用API时发生异常catch执行:', error)
       console.error('异常详情:', JSON.stringify(error))
       clearInterval(progressInterval)
+      wx.hideLoading()
       this.setData({ isLoading: false })
       wx.showToast({
         title: '分析失败，请稍后重试',
@@ -1503,15 +1806,19 @@ Page({
     })
     
     // 模拟进度更新
+    let currentProgress = 0
     const progressInterval = setInterval(() => {
-      this.setData(prevData => {
-        if (prevData.progress >= 90) {
-          clearInterval(progressInterval)
-          return { progress: 90 }
-        }
-        return { progress: prevData.progress + 10 }
-      })
-    }, 800)
+      // 随机增加2-5%的进度，使进度更新更快，适配1分钟的处理时间
+      const increment = Math.floor(Math.random() * 4) + 2
+      currentProgress += increment
+      
+      if (currentProgress >= 96) {
+        clearInterval(progressInterval)
+        this.setData({ progress: 96 })
+      } else {
+        this.setData({ progress: currentProgress })
+      }
+    }, 1000)
     
     // 调用后端API生成面试话术
     const api = require('../../api/index')
@@ -1568,9 +1875,11 @@ Page({
         app.globalData.interviewScript = res.interview_script || ''
         app.globalData.jobInfo = jobInfo
         
+        // 显示成功弹框提示
         wx.showToast({
-          title: '面试话术生成成功',
-          icon: 'success'
+          title: '面试话术重新生成完成',
+          icon: 'success',
+          duration: 2000
         })
         
         // 跳转到面试话术页面
@@ -1614,15 +1923,19 @@ Page({
     })
     
     // 模拟进度更新
+    let currentProgress = 0
     const progressInterval = setInterval(() => {
-      this.setData(prevData => {
-        if (prevData.progress >= 90) {
-          clearInterval(progressInterval)
-          return { progress: 90 }
-        }
-        return { progress: prevData.progress + 10 }
-      })
-    }, 800)
+      // 随机增加2-5%的进度，使进度更新更快，适配1分钟的处理时间
+      const increment = Math.floor(Math.random() * 4) + 2
+      currentProgress += increment
+      
+      if (currentProgress >= 96) {
+        clearInterval(progressInterval)
+        this.setData({ progress: 96 })
+      } else {
+        this.setData({ progress: currentProgress })
+      }
+    }, 1000)
     
     // 调用后端API生成学习计划
     const api = require('../../api/index')
@@ -1679,9 +1992,11 @@ Page({
         app.globalData.learningPlan = res.learning_path || ''
         app.globalData.jobInfo = jobInfo
         
+        // 显示成功弹框提示
         wx.showToast({
-          title: '学习计划生成成功',
-          icon: 'success'
+          title: '学习计划重新生成完成',
+          icon: 'success',
+          duration: 2000
         })
         
         // 跳转到学习计划页面
@@ -1708,6 +2023,7 @@ Page({
     const that = this
     const app = getApp()
     
+    
     // 获取fileUrl和resumeFile信息
     const fileUrl = that.data.file_url
     const resumeFile = that.data.resumeFile
@@ -1718,7 +2034,8 @@ Page({
         url: fileUrl,  // 使用已上传的file_url
         filename: resumeFile.name,
         file_type: 'document'  // 添加文件类型
-      }
+      },
+      force_update: true  // 添加强制更新参数，忽略已存在的记录，强制重新生成新的内容
     }
     
     // 判断输入类型，选择正确的参数

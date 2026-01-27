@@ -10,7 +10,7 @@
 }
 
 .h2w__main {
-    margin: 0 40rpx 40rpx 40rpx;
+    margin: 0 20rpx 20rpx 20rpx;
     padding-top: 40rpx;
 }
 

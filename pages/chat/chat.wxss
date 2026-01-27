@@ -39,15 +39,16 @@
   margin-bottom: 0 !important;
   margin-right: 20rpx !important;
   padding: 20rpx 30rpx !important;
-  height: 80rpx !important;
-  border-radius: 40rpx !important;
+  min-height: 80rpx !important;
+  max-height: 200rpx !important;
+  border-radius: 16rpx !important;
   font-size: 28rpx !important;
-  line-height: 80rpx !important; /* 与height相等，确保文字垂直居中 */
+  line-height: 40rpx !important; /* 调整行高，适应多行文本 */
   background-color: #f8f9fa !important;
-  display: flex !important;
-  align-items: center !important; /* 确保文字垂直居中 */
+  border: 1rpx solid #e5e7eb !important;
   box-sizing: border-box !important;
   transition: none !important; /* 禁用过渡动画，避免输入时闪动 */
+  resize: none !important; /* 禁用手动调整大小 */
 }
 
 /* 输入框占位符样式 */
@@ -55,6 +56,10 @@
   font-size: 26rpx !important;
   color: #d1d5db !important;
   line-height: 80rpx !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
 /* 当输入框获得焦点时隐藏占位符 */
@@ -360,4 +365,77 @@ page {
 /* 移除页面底部的额外padding，避免出现空白区域 */
 page {
   padding-bottom: 15px !important;
+}
+
+/* 复制按钮样式 */
+.copy-btn {
+  position: absolute !important;
+  bottom: 8rpx !important;
+  right: 8rpx !important;
+  width: 50rpx !important;
+  height: 50rpx !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 10rpx !important;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+  z-index: 10 !important;
+}
+
+.copy-btn:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.15) !important;
+}
+
+.copy-btn:active {
+  transform: scale(0.95) !important;
+}
+
+.copy-icon {
+  width: 40rpx !important;
+  height: 40rpx !important;
+  vertical-align: middle !important;
+}
+
+/* 确保聊天气泡相对定位，使复制按钮可以绝对定位 */
+.chat-bubble {
+  position: relative !important;
+}
+
+/* 为AI消息气泡添加内边距，确保内容不被复制按钮遮挡 */
+.chat-bubble.bot {
+  padding-bottom: 60rpx !important;
+}
+
+/* 自定义占位符容器样式 */
+.textarea-container {
+  position: relative !important;
+  flex: 1 !important;
+  margin-right: 20rpx !important;
+}
+
+/* 自定义占位符样式 */
+.custom-placeholder {
+  position: absolute !important;
+  top: 20rpx !important;
+  left: 30rpx !important;
+  color: #d1d5db !important;
+  font-size: 26rpx !important;
+  line-height: 40rpx !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 调整输入框样式，确保与自定义占位符兼容 */
+.textarea-container .input-text {
+  margin-right: 0 !important;
+  min-height: 80rpx !important;
+  max-height: 200rpx !important;
+  border-radius: 16rpx !important;
 }

@@ -8,7 +8,17 @@
       <scroll-view class="chat-messages" scroll-y="true" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="true">
         <!-- 遍历消息列表，根据角色显示不同样式 -->
         <view wx:for="{{messages}}" wx:key="index" class="chat-message {{item.role}}">
-          <view class="chat-bubble {{item.role}}">{{item.content}}</view>
+          <view class="chat-bubble {{item.role}}">
+            <!-- 使用towxml组件渲染AI回复的Markdown内容 -->
+            <towxml wx:if="{{item.role === 'bot' && item.towxmlContent}}" nodes="{{item.towxmlContent}}" />
+            <!-- 对于用户消息，直接显示文本 -->
+            <text wx:else>{{item.content}}</text>
+            
+            <!-- 一键复制按钮，仅在AI回复时显示 -->
+            <view wx:if="{{item.role === 'bot'}}" class="copy-btn" bindtap="copyMessageContent" data-index="{{index}}">
+              <image src="/images/copy.png" class="copy-icon"></image>
+            </view>
+          </view>
         </view>
         
         <!-- 加载中状态 -->
@@ -26,14 +36,17 @@
       </scroll-view>
       
       <view class="chat-input">
-        <input 
-          class="input-text"
-          bindinput="onChatInput" 
-          value="{{inputMessage}}" 
-          bindconfirm="sendChatMessage"
-          placeholder="请输入您的问题..."
-          placeholder-class="input-placeholder"
-        />
+        <view class="textarea-container">
+          <textarea 
+            class="input-text"
+            bindinput="onChatInput" 
+            value="{{inputMessage}}" 
+            bindconfirm="sendChatMessage"
+            auto-height="true"
+            style="min-height: 80rpx; max-height: 200rpx;"
+          />
+          <view wx:if="{{!inputMessage}}" class="custom-placeholder">请输入您的问题...</view>
+        </view>
         <image 
           class="send-btn {{isSendButtonEnabled ? '' : 'disabled'}}" 
           src="/images/send.png" 

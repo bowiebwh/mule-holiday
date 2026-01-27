@@ -4,12 +4,13 @@
     "pages/interview/interview",
     "pages/learning/learning",
     "pages/chat/chat",
-    "pages/me/me"
+    "pages/me/me",
+    "pages/profile-edit/profile-edit"
   ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTitleText": "骡马假日",
+    "navigationBarTitleText": "骡马假日🐴",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#f5f5f5"
   },

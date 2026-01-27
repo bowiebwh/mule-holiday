@@ -337,9 +337,9 @@ button.btn:disabled {
 /* 聊天气泡样式 */
 .chat-bubble {
   display: inline-block !important;
-  padding: 20rpx 30rpx !important;
+  padding: 10rpx 20rpx !important;
   border-radius: 20rpx !important;
-  max-width: 70% !important;
+  max-width: 90% !important;
   font-size: 28rpx !important;
   line-height: 1.6 !important;
   word-break: break-all !important;
@@ -374,7 +374,7 @@ button.btn:disabled {
   flex: 1 !important;
   padding: 20rpx 30rpx !important;
   border: 2rpx solid #dadce0 !important;
-  border-radius: 40rpx !important;
+  border-radius: 30rpx !important;
   font-size: 28rpx !important;
   background-color: #f8f9fa !important;
   transition: all 0.2s ease !important;
@@ -785,3 +785,5 @@ input {
   font-size: 48rpx !important;
   color: #1a73e8 !important;
 }
+
+

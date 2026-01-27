@@ -34,30 +34,67 @@ App({
               success: res => {
                 if (res.data.success) {
                   // 3. 保存token到本地存储
-                  const { access_token, refresh_token, user_info: backendUserInfo } = res.data.data
+                  const { access_token, refresh_token } = res.data.data
                   wx.setStorageSync('accessToken', access_token)
                   wx.setStorageSync('refreshToken', refresh_token)
                   
-                  // 保存用户信息到globalData
-                  this.globalData.userInfo = backendUserInfo
-                  
-                  // 4. 登录成功后创建新会话
-                  const api = require('./api/index')
-                  api.createNewSession().then(sessionRes => {
-                    if (sessionRes.session_id) {
-                      // 保存新会话ID到本地存储
-                      wx.setStorageSync('currentSessionId', sessionRes.session_id)
-                      console.log('新会话创建成功！session_id:', sessionRes.session_id)
-                    } else {
-                      console.error('创建新会话失败:', sessionRes.message || '未知错误')
+                  // 4. 登录成功后获取用户完整信息
+                  wx.request({
+                    url: `${this.globalData.apiBaseUrl}/api/me`,
+                    method: 'GET',
+                    header: {
+                      'content-type': 'application/json',
+                      'Authorization': `Bearer ${access_token}`
+                    },
+                    success: (userInfoRes) => {
+                      if (userInfoRes.data.success) {
+                        // ✅ 修复：直接使用后端返回的 userInfo，无需额外处理
+                        const userInfo = userInfoRes.data.data
+                        console.log('获取用户完整信息:', userInfo)
+                        
+                        // 保存用户信息到globalData
+                        this.globalData.userInfo = userInfo
+                        console.log('更新后的全局用户信息:', this.globalData.userInfo)
+                        
+                        // 通知所有页面更新用户信息
+                        if (this.updateUserInfoCallback) {
+                          this.updateUserInfoCallback(this.globalData.userInfo)
+                        }
+                      }
+                      
+                      // 5. 创建新会话
+                      const api = require('./api/index')
+                      api.createNewSession().then(sessionRes => {
+                        if (sessionRes.session_id) {
+                          wx.setStorageSync('currentSessionId', sessionRes.session_id)
+                          console.log('新会话创建成功！session_id:', sessionRes.session_id)
+                        }
+                        console.log('登录成功！', this.globalData.userInfo)
+                        resolve(res.data)
+                      }).catch(sessionErr => {
+                        console.error('创建新会话失败:', sessionErr)
+                        console.log('登录成功！', this.globalData.userInfo)
+                        resolve(res.data)
+                      })
+                    },
+                    fail: (err) => {
+                      console.error('获取用户完整信息失败:', err)
+                      
+                      // 创建新会话
+                      const api = require('./api/index')
+                      api.createNewSession().then(sessionRes => {
+                        if (sessionRes.session_id) {
+                          wx.setStorageSync('currentSessionId', sessionRes.session_id)
+                          console.log('新会话创建成功！session_id:', sessionRes.session_id)
+                        }
+                        console.log('登录成功！', this.globalData.userInfo)
+                        resolve(res.data)
+                      }).catch(sessionErr => {
+                        console.error('创建新会话失败:', sessionErr)
+                        console.log('登录成功！', this.globalData.userInfo)
+                        resolve(res.data)
+                      })
                     }
-                    console.log('登录成功！', this.globalData.userInfo)
-                    resolve(res.data)
-                  }).catch(sessionErr => {
-                    console.error('创建新会话失败:', sessionErr)
-                    // 即使创建会话失败，登录也视为成功
-                    console.log('登录成功！', this.globalData.userInfo)
-                    resolve(res.data)
                   })
                 } else {
                   const err = new Error(`登录失败！${res.data.message}`)
@@ -140,11 +177,18 @@ App({
     this.globalData.userInfo = null
     // 清除授权状态
     wx.setStorageSync('authSetting', {})
+    // 清除临时数据，确保退出登录后看不到之前的分析结果
+    this.globalData.jobInfo = null
+    this.globalData.resumeInfo = null
+    this.globalData.beautifiedResume = null
+    this.globalData.interviewScript = null
+    this.globalData.learningPlan = null
     console.log('退出登录成功！')
   },
+  
   globalData: {
     userInfo: null,
-    apiBaseUrl: 'https://h7fs9pqcvf.coze.site', // 后端服务地址
+    apiBaseUrl: 'https://h7fs9pqcvf.coze.site',
     // 存储临时数据
     jobInfo: null,
     resumeInfo: null,

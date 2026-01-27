@@ -42,6 +42,13 @@ Page({
   onLoad() {
     // 页面加载时的初始化
     this.loadHistoryList()
+    
+    // 注册用户信息更新回调
+    const app = getApp()
+    app.updateUserInfoCallback = (userInfo) => {
+      console.log('收到用户信息更新通知:', userInfo)
+      this.checkLoginStatus()
+    }
   },
 
   onShow() {
@@ -76,16 +83,28 @@ Page({
     const app = getApp()
     const globalUserInfo = app.globalData.userInfo || {}
     
+    console.log('检查登录状态 - globalUserInfo:', globalUserInfo)
+    
     if (accessToken) {
       // 已登录
+      const avatarUrl = globalUserInfo.avatar_url || ''
+      console.log('检查登录状态 - avatarUrl:', avatarUrl)
+      
       this.setData({
         userInfo: {
           name: globalUserInfo.nickname || '微信用户',
           nickname: globalUserInfo.nickname || '',
-          avatarUrl: globalUserInfo.avatar_url || '',
+          avatarUrl: avatarUrl,
+          gender: globalUserInfo.gender || 0,
+          country: globalUserInfo.country || '',
+          province: globalUserInfo.province || '',
+          city: globalUserInfo.city || '',
+          language: globalUserInfo.language || '',
           isLogin: true
         }
       })
+      
+      console.log('检查登录状态 - 更新后的userInfo:', this.data.userInfo)
     } else {
       // 未登录
       this.setData({
@@ -297,10 +316,26 @@ Page({
           app.login(userInfo).then(res => {
             // 登录成功
             
-            // 获取全局用户信息
-            const globalUserInfo = app.globalData.userInfo || {};
-            console.log('登录成功后获取的全局用户信息:', globalUserInfo);
+          // 获取全局用户信息
+          const globalUserInfo = app.globalData.userInfo || {};
+          console.log('登录成功后获取的全局用户信息:', globalUserInfo);
             
+          // 检查用户信息是否完整
+          if (!globalUserInfo.nickname || !globalUserInfo.avatar_url) {
+            // 用户信息不完整，跳转到资料编辑页面
+            wx.showToast({
+              title: '请完善个人资料',
+              icon: 'none'
+            })
+            
+            // 延迟跳转，确保用户看到提示
+            setTimeout(() => {
+              wx.navigateTo({
+                url: '/pages/profile-edit/profile-edit'
+              })
+            }, 1000)
+          } else {
+            // 用户信息完整，更新页面数据
             // 更新页面用户信息
             this.setData({
               userInfo: {
@@ -310,22 +345,23 @@ Page({
                 isLogin: true
               }
             })
-            
+              
             // 显示登录成功提示
             wx.showToast({
               title: '登录成功',
               icon: 'success'
             })
-            
+              
             // 重置历史记录相关状态，确保能正常加载数据
             this.setData({
               page: 1,
               hasMore: true,
               isLoading: false
             })
-            
+              
             // 登录成功后刷新历史记录列表
             this.loadHistoryList()
+          }
           }).catch(err => {
             // 登录失败
             console.error('登录失败:', err);
@@ -355,6 +391,16 @@ Page({
 
   // 显示反馈表单
   showFeedbackForm() {
+    // 检查登录状态，未登录用户不能提交反馈
+    if (!this.data.userInfo.isLogin) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     this.setData({
       showFeedback: true,
       feedbackData: {
@@ -392,6 +438,16 @@ Page({
 
   // 提交反馈
   submitFeedback() {
+    // 检查登录状态，未登录用户不能提交反馈
+    if (!this.data.userInfo.isLogin) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 3000
+      })
+      return
+    }
+    
     const { feedback_type, title, content, contact } = this.data.feedbackData
 
     // 验证必填字段
@@ -485,6 +541,172 @@ Page({
   closeSuccessModal() {
     this.setData({
       showSuccess: false
+    })
+  },
+
+  // 选择头像
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail
+    
+    // 更新本地头像显示
+    this.setData({
+      'userInfo.avatarUrl': avatarUrl
+    })
+    
+    // 上传头像并更新用户信息
+    this.updateUserInfo({ avatar_url: avatarUrl })
+  },
+
+  // 昵称输入完成
+  onNicknameBlur(e) {
+    const nickname = e.detail.value.trim()
+    if (nickname) {
+      // 更新本地昵称显示
+      this.setData({
+        'userInfo.nickname': nickname
+      })
+      
+      // 更新用户信息
+      this.updateUserInfo({ nickname })
+    }
+  },
+
+  // 更新用户信息
+  updateUserInfo(updatedData) {
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+    
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+    
+    wx.request({
+      url: `${apiBaseUrl}/api/me`,
+      method: 'PATCH',
+      header: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      data: updatedData,
+      success: (res) => {
+        if (res.data.success) {
+          // 更新成功，更新全局用户信息
+          const updatedUserInfo = res.data.data
+          app.globalData.userInfo = updatedUserInfo
+          
+          // 更新页面用户信息
+          this.setData({
+            userInfo: {
+              ...this.data.userInfo,
+              nickname: updatedUserInfo.nickname,
+              avatarUrl: updatedUserInfo.avatar_url,
+              gender: updatedUserInfo.gender,
+              country: updatedUserInfo.country,
+              province: updatedUserInfo.province,
+              city: updatedUserInfo.city,
+              language: updatedUserInfo.language
+            }
+          })
+          
+          wx.showToast({
+            title: '更新成功',
+            icon: 'success'
+          })
+        } else {
+          console.error('更新用户信息失败:', res.data.message)
+          wx.showToast({
+            title: '更新失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+      },
+      fail: (err) => {
+        console.error('更新用户信息请求失败:', err)
+        wx.showToast({
+          title: '网络错误，请稍后重试',
+          icon: 'none'
+        })
+      }
+    })
+  },
+
+  // 下载历史记录中的优化后简历
+  downloadHistoryResume(e) {
+    const id = e.currentTarget.dataset.id
+    const historyItem = this.data.historyList.find(item => item.id === id)
+    
+    if (!historyItem || !historyItem.fullData.beautified_resume_url) {
+      wx.showToast({
+        title: '暂无法下载简历',
+        icon: 'none'
+      })
+      return
+    }
+    
+    const downloadUrl = historyItem.fullData.beautified_resume_url.trim()
+    
+    wx.showLoading({
+      title: '正在下载简历...',
+    })
+    
+    // 下载文件
+    wx.downloadFile({
+      url: downloadUrl,
+      timeout: 600000, // 延长超时时间到10分钟，适应长响应时间
+      success: function(res) {
+        wx.hideLoading()
+        
+        if (res.statusCode === 200) {
+          // 打开下载的文件
+          wx.openDocument({
+            filePath: res.tempFilePath,
+            fileType: 'docx',
+            showMenu: true, // 允许用户选择其他应用打开
+            success: function(openRes) {
+              console.log('文件打开成功', openRes)
+            },
+            fail: function(openErr) {
+              console.error('文件打开失败', openErr)
+              wx.showToast({
+                title: '文件打开失败，请重试',
+                icon: 'none'
+              })
+            }
+          })
+        } else {
+          wx.showToast({
+            title: '下载失败，请重试',
+            icon: 'none'
+          })
+        }
+      },
+      fail: function(err) {
+        wx.hideLoading()
+        console.error('下载失败', err)
+        wx.showToast({
+          title: '下载失败，请重试',
+          icon: 'none'
+        })
+      }
+    })
+  },
+
+  // 编辑个人资料
+  onEditProfile() {
+    console.log('onEditProfile called')
+    wx.navigateTo({
+      url: '/pages/profile-edit/profile-edit',
+      success: function(res) {
+        console.log('navigateTo success:', res)
+      },
+      fail: function(err) {
+        console.log('navigateTo fail:', err)
+      }
     })
   }
 })

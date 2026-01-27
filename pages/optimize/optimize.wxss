@@ -144,6 +144,24 @@
   cursor: not-allowed;
 }
 
+/* 一键清除按钮样式 */
+.btn-clear {
+  width: 100%;
+  padding: 24rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #ef4444;
+  border: none;
+  border-radius: 12rpx;
+  margin-top: 24rpx;
+  transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+  background-color: #dc2626;
+}
+
 /* 文件上传样式 */
 .file-upload {
   display: flex;
@@ -414,6 +432,6 @@
 }
 
 /* 移除页面底部的额外padding，避免出现空白区域 */
-page {
+/*page {
   padding-bottom: 60px !important;
-}
+}*/

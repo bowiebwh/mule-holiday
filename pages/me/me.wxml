@@ -1,19 +1,27 @@
 <view class="container">
   <!-- 用户信息栏 -->
   <view class="user-info-bar">
-    <view class="user-info">
-      <image class="avatar" src="{{userInfo.avatarUrl || '/images/me-active.png'}}" mode="aspectFill"></image>
-      <text class="user-name">{{userInfo.nickname || userInfo.name}}</text>
-    </view>
-    <!-- 登录按钮：未登录时显示普通按钮，已登录时显示退出按钮 -->
-    <block wx:if="{{!userInfo.isLogin}}">
+    <block wx:if="{{userInfo.isLogin}}">
+      <view class="user-info-left">
+        <image class="avatar" src="{{userInfo.avatarUrl || '/images/me-active.png'}}" mode="aspectFill"></image>
+        <view class="user-details">
+          <text class="user-name">{{userInfo.name || '用户'}}</text>
+          <text class="edit-text" bindtap="onEditProfile">编辑</text>
+        </view>
+      </view>
       <view class="login-btn" bindtap="onLogin">
-        <text>登录</text>
+        <text>退出</text>
       </view>
     </block>
     <block wx:else>
+      <view class="user-info-left">
+        <image class="avatar" src="/images/me-active.png" mode="aspectFill"></image>
+        <view class="user-details">
+          <text class="user-name">{{userInfo.name}}</text>
+        </view>
+      </view>
       <view class="login-btn" bindtap="onLogin">
-        <text>退出</text>
+        <text>登录</text>
       </view>
     </block>
   </view>
@@ -40,12 +48,22 @@
         <text class="position-name">{{item.positionName}}</text>
         <text class="create-time">{{item.formattedTime}}</text>
       </view>
-      <view 
-        class="delete-btn" 
-        bindtap="deleteHistoryItem" 
-        data-id="{{item.id}}"
-      >
-        删除
+      <view class="item-actions">
+        <view 
+          wx:if="{{item.fullData.beautified_resume_url}}" 
+          class="download-btn" 
+          bindtap="downloadHistoryResume" 
+          data-id="{{item.id}}"
+        >
+          下载
+        </view>
+        <view 
+          class="delete-btn" 
+          bindtap="deleteHistoryItem" 
+          data-id="{{item.id}}"
+        >
+          删除
+        </view>
       </view>
     </view>
 

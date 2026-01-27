@@ -1,6 +1,6 @@
 {
-  "navigationBarTitleText": "骡马假日🐴",
   "usingComponents": {
     "towxml": "../../components/towxml/towxml"
-  }
+  },
+  "navigationBarTitleText": "骡马假日🐴"
 }

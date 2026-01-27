@@ -1,0 +1,121 @@
+/* 页面容器样式 */
+.container {
+  background-color: white;
+  min-height: 100vh;
+  font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 顶部导航栏样式 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left,
+.nav-right {
+  font-size: 28rpx;
+  color: #1a73e8;
+  padding: 8rpx 16rpx;
+}
+
+.nav-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+/* 头像部分样式 */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  width: 100%;
+}
+
+.avatar-btn {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 auto 20rpx;
+  border: 1rpx solid #e5e7eb;
+  background: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.avatar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  object-fit: contain;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 0;
+  display: block;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+.avatar-hint {
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+  width: 100%;
+  margin-top: 10rpx;
+}
+
+/* 表单部分样式 */
+.form-section {
+  padding: 0 32rpx;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-label {
+  font-size: 30rpx;
+  color: #333;
+  width: 120rpx;
+}
+
+.form-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  padding: 8rpx 0;
+  text-align: left;
+}
+
+.form-input::placeholder {
+  color: #999;
+  font-size: 28rpx;
+}
