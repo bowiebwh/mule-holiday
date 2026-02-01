@@ -188,7 +188,7 @@ Page({
     
     return new Promise((resolve, reject) => {
       let pollingCount = 0
-      const maxPollingCount = 60 // 最多轮询60次（60秒）
+      const maxPollingCount = 30 // 最多轮询30次（60秒）
       
       const pollingInterval = setInterval(() => {
         pollingCount++
@@ -271,7 +271,7 @@ Page({
           })
           reject(err)
         })
-      }, 1000) // 每1秒轮询一次
+      }, 2000) // 每2秒轮询一次
     })
   },
 

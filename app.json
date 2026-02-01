@@ -60,5 +60,7 @@
     "uploadFile": 1800000,
     "downloadFile": 1800000
   },
-  "debug": true
+  "debug": true,
+  "usingComponents": {},
+  "lazyCodeLoading": "requiredComponents"
 }
