@@ -20,6 +20,22 @@ Page({
       name: '未登录',
       isLogin: false
     },
+    userLevel: {
+      level: 0,
+      name: '',
+      icon: '',
+      description: '',
+      progress: 0,
+      tip: '',
+      next_level_requirement: '',
+      total_usage_count: 0,
+      secret_tip: '',
+      emoji_reaction: ''
+    },
+    levelIconPath: '', // 等级图标路径
+    showLevelDetail: false, // 等级详情弹窗显示状态
+    showImagePreview: false, // 图片预览弹窗显示状态
+    previewImagePath: '', // 预览图片路径
     historyList: [], // 历史记录列表
     isLoading: false, // 加载状态
     keyword: '', // 搜索关键词
@@ -105,6 +121,9 @@ Page({
       })
       
       console.log('检查登录状态 - 更新后的userInfo:', this.data.userInfo)
+      
+      // 登录成功后加载等级信息
+      this.loadUserLevel()
     } else {
       // 未登录
       this.setData({
@@ -694,6 +713,288 @@ Page({
         })
       }
     })
+  },
+
+  // 加载用户等级信息
+  loadUserLevel() {
+    const accessToken = wx.getStorageSync('accessToken')
+    if (!accessToken) {
+      return
+    }
+
+    const app = getApp()
+    const apiBaseUrl = app.globalData.apiBaseUrl
+
+    wx.request({
+      url: `${apiBaseUrl}/api/level/info`,
+      method: 'GET',
+      header: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      success: (res) => {
+        if (res.data.success) {
+          const userLevel = res.data.data
+          console.log('后端返回的userLevel数据:', userLevel)
+          
+          // 确保所有必要字段存在
+          if (!userLevel) {
+            console.error('后端返回的userLevel数据为空')
+            return
+          }
+          
+          // 确保progress字段存在且为数字
+          if (userLevel.progress === undefined || userLevel.progress === null || isNaN(userLevel.progress)) {
+            // 如果没有progress字段或不是数字，尝试计算
+            if (userLevel.total_usage_count && userLevel.next_level_requirement && userLevel.next_level_requirement > 0) {
+              userLevel.progress = Math.min(100, Math.round((userLevel.total_usage_count / userLevel.next_level_requirement) * 100))
+            } else {
+              userLevel.progress = 0
+            }
+          } else {
+            // 确保是数字类型
+            userLevel.progress = Number(userLevel.progress)
+          }
+          
+          console.log('处理后的userLevel.progress:', userLevel.progress, '类型:', typeof userLevel.progress)
+          
+          // 确保next_level_requirement字段存在
+          if (!userLevel.next_level_requirement) {
+            userLevel.next_level_requirement = '继续努力'
+          }
+          
+          const levelIconPath = this.getLevelIconPath(userLevel.level)
+          this.setData({
+            userLevel: userLevel,
+            levelIconPath: levelIconPath
+          })
+          
+          console.log('setData后的userLevel:', this.data.userLevel)
+        } else {
+          console.error('获取等级信息失败:', res.data.message)
+        }
+      },
+      fail: (err) => {
+        console.error('获取等级信息失败:', err)
+      }
+    })
+  },
+
+  // 检查登录状态
+  checkLoginStatus() {
+    // 从本地存储获取token
+    const accessToken = wx.getStorageSync('accessToken')
+    const app = getApp()
+    const globalUserInfo = app.globalData.userInfo || {}
+    
+    console.log('检查登录状态 - globalUserInfo:', globalUserInfo)
+    
+    if (accessToken) {
+      // 已登录
+      const avatarUrl = globalUserInfo.avatar_url || ''
+      console.log('检查登录状态 - avatarUrl:', avatarUrl)
+      
+      this.setData({
+        userInfo: {
+          name: globalUserInfo.nickname || '微信用户',
+          nickname: globalUserInfo.nickname || '',
+          avatarUrl: avatarUrl,
+          gender: globalUserInfo.gender || 0,
+          country: globalUserInfo.country || '',
+          province: globalUserInfo.province || '',
+          city: globalUserInfo.city || '',
+          language: globalUserInfo.language || '',
+          isLogin: true
+        }
+      })
+      
+      console.log('检查登录状态 - 更新后的userInfo:', this.data.userInfo)
+      
+      // 登录成功后加载等级信息
+      this.loadUserLevel()
+    } else {
+      // 未登录
+      this.setData({
+        userInfo: {
+          name: '未登录',
+          isLogin: false
+        },
+        userLevel: {
+          level: 0,
+          name: '',
+          icon: '',
+          description: '',
+          progress: 0,
+          tip: '',
+          next_level_requirement: '',
+          total_usage_count: 0,
+          secret_tip: '',
+          emoji_reaction: ''
+        },
+        levelIconPath: ''
+      })
+    }
+  },
+
+  // 显示等级详情
+  showLevelDetail() {
+    this.setData({
+      showLevelDetail: true
+    })
+  },
+
+  // 关闭等级详情
+  closeLevelDetail() {
+    this.setData({
+      showLevelDetail: false
+    })
+  },
+
+  // 显示秘密提示
+  showSecretTip() {
+    if (this.data.userLevel.secret_tip) {
+      wx.showToast({
+        title: this.data.userLevel.secret_tip,
+        icon: 'none',
+        duration: 3000
+      })
+    }
+  },
+
+  // 预览等级图标
+  previewLevelIcon() {
+    console.log('previewLevelIcon called')
+    const { levelIconPath } = this.data
+    console.log('levelIconPath:', levelIconPath)
+    if (levelIconPath) {
+      // 使用微信原生图片预览API
+      console.log('using wx.previewImage')
+      wx.previewImage({
+        urls: [levelIconPath],
+        current: levelIconPath,
+        success: (res) => {
+          console.log('wx.previewImage success:', res)
+        },
+        fail: (err) => {
+          console.error('wx.previewImage fail:', err)
+          wx.showToast({
+            title: '预览失败，请重试',
+            icon: 'none'
+          })
+        }
+      })
+    } else {
+      // 如果没有图片，显示提示
+      wx.showToast({
+        title: '暂无图标可预览',
+        icon: 'none'
+      })
+    }
+  },
+
+  // 关闭图片预览
+  closeImagePreview() {
+    this.setData({
+      showImagePreview: false,
+      previewImagePath: ''
+    })
+  },
+
+  // 下载等级图标
+  downloadLevelIcon() {
+    const { levelIconPath } = this.data
+    if (levelIconPath) {
+      wx.showLoading({
+        title: '保存中...'
+      })
+      
+      // 对于本地图片，我们使用一个更简单的方法
+      // 直接尝试保存图片
+      wx.getFileSystemManager().readFile({
+        filePath: levelIconPath,
+        success: (res) => {
+          // 创建临时文件
+          const tempFilePath = wx.env.USER_DATA_PATH + '/level_icon_' + Date.now() + '.png'
+          
+          // 写入临时文件
+          wx.getFileSystemManager().writeFile({
+            filePath: tempFilePath,
+            data: res.data,
+            encoding: 'binary',
+            success: () => {
+              // 保存到相册
+              wx.saveImageToPhotosAlbum({
+                filePath: tempFilePath,
+                success: () => {
+                  wx.hideLoading()
+                  wx.showToast({
+                    title: '图标已保存到相册',
+                    icon: 'success'
+                  })
+                },
+                fail: (err) => {
+                  wx.hideLoading()
+                  if (err.errMsg.includes('permission')) {
+                    wx.showModal({
+                      title: '权限提示',
+                      content: '需要保存图片到相册的权限，请在设置中开启',
+                      success: (res) => {
+                        if (res.confirm) {
+                          wx.openSetting()
+                        }
+                      }
+                    })
+                  } else {
+                    wx.showToast({
+                      title: '保存失败，请稍后重试',
+                      icon: 'none'
+                    })
+                  }
+                }
+              })
+            },
+            fail: (err) => {
+              wx.hideLoading()
+              wx.showToast({
+                title: '保存失败，请稍后重试',
+                icon: 'none'
+              })
+            }
+          })
+        },
+        fail: (err) => {
+          wx.hideLoading()
+          // 如果readFile失败，尝试另一种方法
+          wx.showToast({
+            title: '保存失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+      })
+    } else {
+      // 如果没有图片，显示提示
+      wx.showToast({
+        title: '暂无图标可下载',
+        icon: 'none'
+      })
+    }
+  },
+
+  // 获取等级对应的图标路径
+  getLevelIconPath(level) {
+    const levelIcons = {
+      1: '/images/toilet.png',       // 马桶盖新手
+      2: '/images/vest.png',          // 马甲萌新
+      3: '/images/virus.png',         // 木马侦察兵
+      4: '/images/sidehorse.png',     // 鞍马实习生
+      5: '/images/hippocampus.png',   // 海马记忆者
+      6: '/images/mosaic.png',        // 马赛克达人
+      7: '/images/potato.png',        // 马铃薯农场主
+      8: '/images/roadcommand.png',   // 马路指挥官
+      9: '/images/markpen.png',       // 马克笔大师
+      10: '/images/horsegod.png'      // 马神降临
+    }
+    return levelIcons[level] || '/images/toilet.png'
   },
 
   // 编辑个人资料

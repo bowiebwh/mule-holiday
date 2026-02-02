@@ -126,7 +126,7 @@
   <!-- 进度条 -->
   <view class="progress" wx:if="{{isLoading}}">
     <view class="progress-bar">
-      <view class="progress-fill" style="width: {{progress}}%"></view>
+      <view class="progress-fill" style="width: {{progress}}% !important;"></view>
     </view>
     <text class="progress-text">处理中... {{progress}}%</text>
   </view>

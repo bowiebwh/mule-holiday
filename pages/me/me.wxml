@@ -5,7 +5,19 @@
       <view class="user-info-left">
         <image class="avatar" src="{{userInfo.avatarUrl || '/images/me-active.png'}}" mode="aspectFill"></image>
         <view class="user-details">
-          <text class="user-name">{{userInfo.name || '用户'}}</text>
+          <view class="user-name-row">
+            <text class="user-name">{{userInfo.name || '用户'}}</text>
+            <view class="user-level" bindtap="showLevelDetail">
+            <block wx:if="{{userLevel.level > 0 && levelIconPath}}">
+              <image class="level-icon" src="{{levelIconPath}}" mode="aspectFit" bindtap="previewLevelIcon" bindlongpress="downloadLevelIcon"></image>
+              <text class="level-name">{{userLevel.name || '未解锁'}}</text>
+            </block>
+            <block wx:else>
+              <text class="level-icon-emoji">🐴</text>
+              <text class="level-name">未解锁</text>
+            </block>
+          </view>
+          </view>
           <text class="edit-text" bindtap="onEditProfile">编辑</text>
         </view>
       </view>
@@ -86,6 +98,48 @@
     <view wx:if="{{!hasMore && historyList.length > 0}}" class="no-more">
       <text>没有更多数据了</text>
     </view>
+  </view>
+</view>
+
+<!-- 等级详情弹窗 -->
+<view wx:if="{{showLevelDetail}}" class="level-modal">
+  <view class="level-modal-content">
+    <view class="level-modal-header">
+      <text class="level-modal-title">等级详情</text>
+      <view class="level-modal-close" bindtap="closeLevelDetail">×</view>
+    </view>
+    <view class="level-modal-body">
+      <view class="level-info">
+        <block wx:if="{{userLevel.level > 0 && levelIconPath}}">
+          <image class="level-icon-large" src="{{levelIconPath}}" mode="aspectFit" bindtap="previewLevelIcon" bindlongpress="downloadLevelIcon"></image>
+        </block>
+        <block wx:else>
+          <text class="level-icon-large-emoji" bindtap="previewLevelIcon" bindlongpress="downloadLevelIcon">🐴</text>
+        </block>
+        <text class="level-description">{{userLevel.description || '等级描述'}}</text>
+      </view>
+      <view class="level-progress">
+        <text class="progress-text">等级进度</text>
+        <view class="progress-container">
+          <view class="progress-bar" style="width: {{userLevel.progress || 0}}% !important;"></view>
+        </view>
+        <text class="progress-value">{{userLevel.progress || 0}}%</text>
+      </view>
+      <view class="level-tip">
+        <text>{{userLevel.next_level_requirement || '继续努力'}}</text>
+      </view>
+      <view class="level-secret" bindlongpress="showSecretTip">
+        <text>长按查看秘密提示</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 大图预览弹窗 -->
+<view wx:if="{{showImagePreview}}" class="image-preview-modal" bindtap="closeImagePreview">
+  <view class="image-preview-content" catchtap="">
+    <image class="preview-image" src="{{previewImagePath}}" mode="aspectFit"></image>
+    <view class="preview-close" bindtap="closeImagePreview">×</view>
   </view>
 </view>
 
