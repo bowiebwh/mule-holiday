@@ -24,7 +24,7 @@
       <text class="char-count">{{jobUrl.length}}/2000</text>
     </view>
     <button class="btn" bindtap="analyzeJob" disabled="{{!jobUrl}}" wx:if="{{isSubmitCalled}}">
-      重新分析岗位
+      分析岗位
     </button>
   </view>
   
@@ -145,120 +145,4 @@
   <button class="btn btn-clear" bindtap="clearAllData">
     <text>🗑️ 一键清除缓存</text>
   </button>
-</view>
-
-<!-- 遮罩层：点击别处关闭悬浮框 -->
-<view 
-  class="float-box-overlay" 
-  wx:if="{{floatBoxExpanded}}"
-  catchtap="onFloatBoxOverlayTap"
-></view>
-
-<!-- 可拖动队列状态悬浮框 -->
-<view 
-  class="queue-float-box" 
-  style="left: {{floatBoxPosition.x}}px; top: {{floatBoxPosition.y}}px;"
-  bindtouchstart="onFloatBoxTouchStart"
-  bindtouchmove="onFloatBoxTouchMove"
-  bindtouchend="onFloatBoxTouchEnd"
-  bindtap="onFloatBoxTap"
->
-  <!-- 基础状态：显示队列总人数 -->
-  <view class="float-box-base" wx:if="{{!floatBoxExpanded}}">
-    <view class="queue-count">{{queueTotal}}</view>
-    <view class="queue-label">排队</view>
-  </view>
-  
-  <!-- 展开状态：显示详细队列信息 -->
-  <view class="float-box-expanded" wx:if="{{floatBoxExpanded}}">
-    <view class="expanded-header">
-      <view class="expanded-title">队列状态</view>
-    </view>
-    
-    <view class="expanded-content">
-      <!-- 队列总览 -->
-      <view class="queue-overview">
-        <view class="overview-item">
-          <view class="overview-label">队列总人数</view>
-          <view class="overview-value">{{queueTotal}}</view>
-        </view>
-        <view class="overview-item" wx:if="{{queueStats.avg_wait_time}}">
-          <view class="overview-label">平均等待时间</view>
-          <view class="overview-value">{{Math.ceil(queueStats.avg_wait_time / 60)}}分钟</view>
-        </view>
-        <view class="overview-item" wx:if="{{estimatedWaitTimeFormatted}}">
-          <view class="overview-label">预计等待时间</view>
-          <view class="overview-value">{{estimatedWaitTimeFormatted}}</view>
-        </view>
-      </view>
-      
-      <!-- 排队提示 -->
-      <view class="queue-tip" wx:if="{{queueTip}}">
-        <view class="tip-content">{{queueTip}}</view>
-      </view>
-      
-      <!-- 个人任务状态 -->
-      <view class="personal-task" wx:if="{{status === 'QUEUED' || status === 'RUNNING' || status === 'SUCCESS' || status === 'FAILED' || status === 'CANCELLED'}}">
-        <view class="task-header">您的任务</view>
-        
-        <!-- 排队状态 -->
-        <view class="task-info" wx:if="{{status === 'QUEUED'}}">
-          <view class="task-item">
-            <view class="task-label">当前位置</view>
-            <view class="task-value">{{queuePosition}}</view>
-          </view>
-          <view class="task-item">
-            <view class="task-label">预计等待</view>
-            <view class="task-value">{{Math.ceil(estimatedWaitTime / 60)}}分钟</view>
-          </view>
-          <button class="cancel-btn" bindtap="cancelTask">取消任务</button>
-        </view>
-        
-        <!-- 执行中状态 -->
-        <view class="task-info running" wx:if="{{status === 'RUNNING'}}">
-          <view class="progress-bar small">
-            <view class="progress-fill" style="width: {{progress}}% !important;"></view>
-          </view>
-          <view class="progress-info small">
-            <view class="progress-text">{{progressMessage || '处理中...'}}</view>
-            <view class="progress-percent">{{progress}}%</view>
-          </view>
-          <button class="cancel-btn" bindtap="cancelTask">取消任务</button>
-        </view>
-        
-        <!-- 成功状态 -->
-        <view class="task-info success" wx:if="{{status === 'SUCCESS'}}">
-          <view class="status-icon success">✅</view>
-          <view class="status-info">
-            <view class="status-title">处理完成</view>
-            <view class="status-message">分析结果已生成</view>
-          </view>
-        </view>
-        
-        <!-- 失败状态 -->
-        <view class="task-info error" wx:if="{{status === 'FAILED'}}">
-          <view class="status-icon error">❌</view>
-          <view class="status-info">
-            <view class="status-title">处理失败</view>
-            <view class="status-message">{{error || '请稍后重试'}}</view>
-          </view>
-        </view>
-        
-        <!-- 已取消状态 -->
-        <view class="task-info cancelled" wx:if="{{status === 'CANCELLED'}}">
-          <view class="status-icon cancelled">⏹️</view>
-          <view class="status-info">
-            <view class="status-title">任务已取消</view>
-            <view class="status-message">您已取消该任务</view>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 系统提示 -->
-      <view class="system-tip" wx:if="{{queueTotal > 1000}}">
-        <view class="tip-icon">⚠️</view>
-        <view class="tip-text">当前队列人数较多，可能需要较长时间等待，请耐心等待或稍后再来。</view>
-      </view>
-    </view>
-  </view>
 </view>

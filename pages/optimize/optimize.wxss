@@ -440,4 +440,486 @@
 /* 移除页面底部的额外padding，避免出现空白区域 */
 /*page {
   padding-bottom: 60px !important;
-}*/
+}
+*/
+
+/* 队列状态样式 */
+.queue-status {
+  margin: 24rpx 0;
+  padding: 0;
+}
+
+.queue-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  background-color: #eff6ff;
+  border: 2rpx solid #bfdbfe;
+  border-radius: 12rpx;
+}
+
+.queue-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.queue-info {
+  flex: 1;
+}
+
+.queue-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 8rpx;
+}
+
+.queue-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.queue-position {
+  font-size: 24rpx;
+  color: #3b82f6;
+}
+
+.queue-wait-time {
+  font-size: 24rpx;
+  color: #60a5fa;
+}
+
+/* 取消按钮样式已移至 .task-info .cancel-btn */
+
+/* 执行中状态样式 */
+.running-status {
+  margin: 24rpx 0;
+  padding: 0;
+}
+
+.running-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 24rpx;
+  background-color: #eff6ff;
+  border: 2rpx solid #bfdbfe;
+  border-radius: 12rpx;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-percent {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+/* 错误状态样式 */
+.error-status {
+  margin: 24rpx 0;
+  padding: 0;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  background-color: #fee2e2;
+  border: 2rpx solid #fecaca;
+  border-radius: 12rpx;
+}
+
+.error-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.error-info {
+  flex: 1;
+}
+
+.error-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #b91c1c;
+  margin-bottom: 8rpx;
+}
+
+.error-message {
+  font-size: 24rpx;
+  color: #dc2626;
+  line-height: 36rpx;
+}
+
+/* 成功状态样式 */
+.success-status {
+  margin: 24rpx 0;
+  padding: 0;
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  background-color: #dcfce7;
+  border: 2rpx solid #bbf7d0;
+  border-radius: 12rpx;
+}
+
+.success-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.success-info {
+  flex: 1;
+}
+
+.success-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 8rpx;
+}
+
+.success-message {
+  font-size: 24rpx;
+  color: #15803d;
+}
+
+/* 队列状态悬浮框样式 */
+.queue-float-box {
+  position: fixed;
+  z-index: 9999;
+  cursor: move;
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 基础状态样式 */
+.float-box-base {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(60, 60, 60, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.queue-count {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 1px;
+}
+
+.queue-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 展开状态样式 */
+.float-box-expanded {
+  width: 140px;
+  background-color: rgba(60, 60, 60, 0.95);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.expanded-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(70, 70, 70, 0.9);
+}
+
+.expanded-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.expanded-content {
+  padding: 8px;
+}
+
+/* 队列总览样式 */
+.queue-overview {
+  margin-bottom: 6px;
+}
+
+.overview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.overview-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.overview-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* 排队提示样式 */
+.queue-tip {
+  margin: 6px 0;
+  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  border-left: 2px solid #3b82f6;
+}
+
+.tip-content {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+}
+
+/* 个人任务样式 */
+.personal-task {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.task-header {
+  font-size: 11px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  padding: 6px;
+  position: relative;
+  z-index: 5;
+  min-height: 70px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.task-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+  width: 55px;
+  text-align: left;
+}
+
+.task-value {
+  font-size: 9px;
+  font-weight: bold;
+  color: #ffffff;
+  flex-shrink: 0;
+  width: 35px;
+  text-align: right;
+}
+
+.task-info button.cancel-btn {
+  margin-top: 5px !important;
+  width: 100% !important;
+  background-color: rgba(239, 68, 68, 0.6) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-size: 8px !important;
+  font-weight: 500 !important;
+  padding: 3px 0 !important;
+  border-radius: 2px !important;
+  text-align: center !important;
+  transition: all 0.2s ease !important;
+  z-index: 10 !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+.task-info .cancel-btn:hover {
+  background-color: rgba(220, 38, 38, 1);
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 小型进度条样式 */
+.progress-bar.small {
+  height: 8px;
+  margin: 8px 0;
+}
+
+.progress-info.small {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.progress-info.small .progress-text {
+  font-size: 12px;
+  color: #666;
+  flex: 1;
+}
+
+.progress-info.small .progress-percent {
+  font-size: 12px;
+  font-weight: bold;
+  color: #1890ff;
+  margin-left: 8px;
+}
+
+/* 任务状态样式 */
+.task-info.success {
+  background-color: rgba(82, 196, 26, 0.2);
+  border: 1px solid rgba(82, 196, 26, 0.3);
+}
+
+.task-info.error {
+  background-color: rgba(255, 77, 79, 0.2);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+}
+
+.task-info.cancelled {
+  background-color: rgba(153, 153, 153, 0.2);
+  border: 1px solid rgba(153, 153, 153, 0.3);
+}
+
+/* 执行中状态的特殊样式 */
+.task-info.running {
+  display: block;
+}
+
+/* 调整小型进度条样式 */
+.float-box-expanded .progress-bar.small {
+  height: 4px;
+  margin: 6px 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.status-icon {
+  font-size: 12px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.status-icon.success {
+  color: #52c41a;
+}
+
+.status-icon.error {
+  color: #ff4d4f;
+}
+
+.status-icon.cancelled {
+  color: #999;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1px;
+}
+
+.status-message {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.3;
+}
+
+/* 系统提示样式 */
+.system-tip {
+  margin-top: 4px;
+  padding: 4px;
+  background-color: rgba(250, 173, 20, 0.2);
+  border-radius: 3px;
+  border-left: 2px solid #faad14;
+  display: flex;
+  align-items: flex-start;
+}
+
+.tip-icon {
+  font-size: 9px;
+  margin-right: 2px;
+  margin-top: 1px;
+  color: #faad14;
+}
+
+.tip-text {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+  line-height: 1.3;
+}
+
+/* 队列人数阈值样式 */
+.queue-float-box.warning .queue-count {
+  color: #faad14;
+}
+
+.queue-float-box.danger .queue-count {
+  color: #ff4d4f;
+}
+
+/* 拖动状态样式 */
+.queue-float-box.dragging {
+  opacity: 0.8;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* 遮罩层样式 */
+.float-box-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  z-index: 9998; /* 低于悬浮框的z-index */
+}

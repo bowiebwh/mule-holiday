@@ -32,28 +32,7 @@ Page({
     taskId: null,        // 任务 ID
     uploadProgress: 0,   // 上传进度
     ocrStatus: 'idle',   // idle, uploading, processing, completed
-    ocrResult: null,     // OCR 结果
-    // 队列 API 相关状态
-    status: '',          // QUEUED/RUNNING/SUCCESS/FAILED - 任务状态
-    queuePosition: null, // 排队位置
-    estimatedWaitTime: 0, // 预计等待时间
-    progressMessage: '', // 进度描述
-    cancelPoll: null,    // 取消轮询的定时器
-    isPolling: false,     // 是否正在轮询
-    // 队列总人数相关
-    queueTotal: 0,       // 队列总人数
-    queueStats: {},      // 队列统计信息
-    queueTip: '',        // 排队提示文本
-    estimatedWaitTimeFormatted: '', // 格式化的预计等待时间
-    // 悬浮框相关
-    floatBoxPosition: {
-      x: 220,            // 初始X坐标（中上方）
-      y: 14             // 初始Y坐标（JD文字描述上方）
-    },
-    floatBoxExpanded: false, // 悬浮框是否展开
-    floatBoxDragging: false, // 悬浮框是否正在拖动
-    floatBoxStartX: 0,      // 拖动开始X坐标
-    floatBoxStartY: 0       // 拖动开始Y坐标
+    ocrResult: null      // OCR 结果
   },
 
   // 职位URL输入事件
@@ -744,65 +723,23 @@ Page({
       progress: 0
     })
     
-    // 先检查队列状态
-    this.getQueueStatus().then(queueData => {
-      console.log('队列状态:', queueData)
+    // 模拟进度更新，使用更平滑的随机进度增加，适配3分钟的处理时间
+    let currentProgress = 0
+    const progressInterval = setInterval(() => {
+      // 随机增加0.5-2%的进度，使进度更新更缓慢自然
+      const increment = Math.floor(Math.random() * 2) + 1
+      currentProgress += increment
       
-      // 检查是否有排队
-      if (queueData.pending_count > 0) {
-        // 有排队，显示排队状态
-        this.setData({
-          status: 'QUEUED',
-          queuePosition: queueData.pending_count,
-          estimatedWaitTime: queueData.estimated_wait_time || 0
-        })
-        
-        // 显示排队提示
-        wx.showLoading({
-          title: '排队中',
-          mask: true
-        })
+      if (currentProgress >= 96) {
+        clearInterval(progressInterval)
+        this.setData({ progress: 96 })
+      } else {
+        this.setData({ progress: currentProgress })
       }
-      
-      // 模拟进度更新，使用更平滑的随机进度增加，适配3分钟的处理时间
-      let currentProgress = 0
-      const progressInterval = setInterval(() => {
-        // 随机增加0.5-2%的进度，使进度更新更缓慢自然
-        const increment = Math.floor(Math.random() * 2) + 1
-        currentProgress += increment
-        
-        if (currentProgress >= 96) {
-          clearInterval(progressInterval)
-          this.setData({ progress: 96 })
-        } else {
-          this.setData({ progress: currentProgress })
-        }
-      }, 2000)
-      
-      // 调用后端API，使用已上传的file_key
-      this.callApiWithFileKey(jobUrl, file_key, progressInterval)
-    }).catch(err => {
-      console.error('获取队列状态失败:', err)
-      
-      // 即使获取队列状态失败，也继续执行API调用
-      // 模拟进度更新，使用更平滑的随机进度增加，适配3分钟的处理时间
-      let currentProgress = 0
-      const progressInterval = setInterval(() => {
-        // 随机增加0.5-2%的进度，使进度更新更缓慢自然
-        const increment = Math.floor(Math.random() * 2) + 1
-        currentProgress += increment
-        
-        if (currentProgress >= 96) {
-          clearInterval(progressInterval)
-          this.setData({ progress: 96 })
-        } else {
-          this.setData({ progress: currentProgress })
-        }
-      }, 2000)
-      
-      // 调用后端API，使用已上传的file_key
-      this.callApiWithFileKey(jobUrl, file_key, progressInterval)
-    })
+    }, 2000)
+    
+    // 调用后端API，使用已上传的file_key
+    this.callApiWithFileKey(jobUrl, file_key, progressInterval)
   },
 
   // 上传文件并调用API（完整流程）
@@ -847,7 +784,7 @@ Page({
           }
           
           wx.request({
-              url: `${app.globalData.apiBaseUrl}/stream_run_async`,
+              url: `${app.globalData.apiBaseUrl}/stream_run`,
               method: 'POST',
               header: {
                 'content-type': 'application/json',
@@ -899,45 +836,50 @@ Page({
                 const message = JSON.parse(jsonStr)
                 console.log('解析到SSE消息:', message)
                 
-                // 处理新的 /stream_run_async 消息格式
-                if (message.type === 'progress') {
-                      // 处理进度消息
-                      that.handleProgress(message)
-                      // 保存 task_id
-                      if (message.task_id) {
-                        that.setData({ taskId: message.task_id })
-                        // 启动任务状态轮询
-                        if (!that.data.isPolling) {
-                          that.startPoll(message.task_id)
-                        }
-                      }
-                    } else if (message.type === 'complete') {
-                  // 处理完成消息
-                  that.handleComplete(message)
-                  // 保存结果
-                  finalResult = message.result
-                  // 保存 task_id
-                  if (message.task_id) {
-                    that.setData({ taskId: message.task_id })
-                    console.log('保存task_id:', message.task_id)
+                // 处理不同类型的消息
+                if (message.type === 'node_start') {
+                  // 更新进度
+                  const newProgress = message.progress || 0
+                  that.setData({ progress: newProgress })
+                  wx.showLoading({
+                    title: message.node_name || '处理中...',
+                    mask: true
+                  })
+                } else if (message.type === 'node_complete') {
+                  // 节点完成，更新进度并合并state数据
+                  const newProgress = message.progress || 0
+                  that.setData({ progress: newProgress })
+                  // 合并state数据到resultData
+                  if (message.state) {
+                    resultData = { ...resultData, ...message.state }
+                    console.log('合并state数据后的resultData:', resultData)
                   }
-                  // 保存 record_id（从 result 中提取）
-                  if (message.result && message.result.record_id) {
-                    const recordId = message.result.record_id || ''
-                    that.setData({ record_id: recordId })
-                    console.log('从result中保存record_id:', recordId)
-                  }
-                } else if (message.type === 'error') {
-                  // 处理错误消息
-                  that.handleError(message)
-                  return
-                } else if (message.record_id) {
+                } else if (message.type === 'record_id') {
                   // 保存record_id到页面数据
                   const recordId = message.record_id || ''
                   that.setData({ record_id: recordId })
                   console.log('保存record_id:', recordId)
+                } else if (message.type === 'end' || message.type === 'complete') {
+                  // 处理完成，合并数据
+                  if (message.jd_text) resultData.jd_text = message.jd_text
+                  if (message.beautified_resume) resultData.beautified_resume = message.beautified_resume
+                  if (message.interview_script) resultData.interview_script = message.interview_script
+                  if (message.learning_path) resultData.learning_path = message.learning_path
+                } else if (message.type === 'message_end') {
+                  // 处理Coze API返回的错误格式
+                  if (message.content && message.content.message_end && message.content.message_end.message) {
+                    const errorMessage = message.content.message_end.message
+                    console.error('API返回错误:', errorMessage)
+                    wx.hideLoading()
+                    wx.showToast({
+                      title: errorMessage,
+                      icon: 'none',
+                      duration: 3000
+                    })
+                    return
+                  }
                 } else if (message.jd_text || message.beautified_resume || message.interview_script || message.learning_path) {
-                  // 兼容旧格式：完整数据返回
+                  // 完整数据返回
                   finalResult = message
                 }
               } catch (e) {
@@ -1280,17 +1222,12 @@ Page({
           learning_path: ''
         }
       })
-    } else {
-      // 已登录，开始队列状态轮询
-      this.startQueuePolling()
     }
   },
 
   onHide() {
     // 页面隐藏时的操作
     console.log('optimize页面onHide函数被调用')
-    // 停止队列状态轮询
-    this.stopQueuePolling()
   },
 
   // 测试按钮点击事件
@@ -1327,7 +1264,6 @@ Page({
             progress: 0,
             record_id: '',
             isSubmitCalled: false,
-            status: '',
             jobInfo: {
               position_name: '',
               job_type: '',
@@ -1438,16 +1374,17 @@ Page({
         requestData.jd_text = jobUrl.trim()
       }
       
-      // 分析岗位按钮始终调用 /api/extract-jd 接口
-      let url = `${apiBaseUrl}/api/extract-jd`
-      console.log('调用/api/extract-jd接口分析岗位')
+      // 根据是否有record_id决定调用哪个接口
+      let url = ''
       if (record_id) {
-        // 有record_id，传递record_id参数用于更新现有记录
-        console.log('有record_id，更新已有记录:', record_id)
+        // 有record_id，更新已有记录
+        console.log('有record_id，调用/api/extract-jd更新记录')
+        url = `${apiBaseUrl}/api/extract-jd`
         requestData.record_id = record_id
       } else {
-        // 没有record_id，由后端创建新记录
-        console.log('没有record_id，由后端创建新记录')
+        // 没有record_id，创建新记录
+        console.log('没有record_id，调用/stream_run创建新记录')
+        url = `${apiBaseUrl}/stream_run`
       }
       
       console.log('请求URL:', url)
@@ -1497,13 +1434,6 @@ Page({
             console.log('保存新创建的record_id:', result.record_id)
             this.setData({
               record_id: result.record_id
-            })
-          } else if (!record_id && result.task_id) {
-            // 处理 /stream_run_async 接口返回的 task_id
-            console.log('保存新创建的task_id:', result.task_id)
-            // 这里可以保存 task_id，用于后续查询任务状态
-            this.setData({
-              taskId: result.task_id
             })
           }
           
@@ -1922,9 +1852,8 @@ Page({
     // 检查record_id是否为空
     if (!this.data.record_id) {
       wx.showToast({
-        title: '请先点击"一键生成全部"按钮获取记录ID',
-        icon: 'none',
-        duration: 3000
+        title: '获取record_id失败，请稍后重试',
+        icon: 'none'
       })
       clearInterval(progressInterval)
       this.setData({ isLoading: false })
@@ -2040,9 +1969,8 @@ Page({
     // 检查record_id是否为空
     if (!this.data.record_id) {
       wx.showToast({
-        title: '请先点击"一键生成全部"按钮获取记录ID',
-        icon: 'none',
-        duration: 3000
+        title: '获取record_id失败，请稍后重试',
+        icon: 'none'
       })
       clearInterval(progressInterval)
       this.setData({ isLoading: false })
@@ -2088,11 +2016,6 @@ Page({
   
   onUnload() {
     // 页面卸载时的操作
-    // 清除所有定时器，避免内存泄漏
-    this.stopQueuePolling()
-    if (this.data.cancelPoll) {
-      clearInterval(this.data.cancelPoll)
-    }
   },
   
   // 使用已上传的file_key调用API
@@ -2128,7 +2051,7 @@ Page({
     
     // 使用wx.request发送JSON格式请求，符合接口文档要求
     wx.request({
-      url: `${app.globalData.apiBaseUrl}/stream_run_async`,
+      url: `${app.globalData.apiBaseUrl}/stream_run`,
       method: 'POST',
       header: {
         'content-type': 'application/json',
@@ -2149,7 +2072,7 @@ Page({
           let result = {}
           if (typeof responseText === 'string') {
             // 处理SSE格式的响应
-            if (responseText.includes('data: ')) {
+            if (responseText.includes('event: message')) {
               // 解析SSE数据
               const lines = responseText.split('\n')
               let hasError = false
@@ -2161,43 +2084,30 @@ Page({
                     const message = JSON.parse(jsonStr)
                     console.log('解析到SSE消息:', message)
                     
-                    // 处理新的 /stream_run_async 消息格式
-                    if (message.type === 'progress') {
-                      // 处理进度消息
-                      that.handleProgress(message)
-                      // 保存 task_id
-                      if (message.task_id) {
-                        that.setData({ taskId: message.task_id })
-                        // 启动任务状态轮询
-                        if (!that.data.isPolling) {
-                          that.startPoll(message.task_id)
-                        }
+                    // 处理不同类型的消息
+                    if (message.type === 'message_end') {
+                      if (message.content && message.content.message_end && message.content.message_end.message) {
+                        const errorMessage = message.content.message_end.message
+                        console.error('SSE API返回错误:', errorMessage)
+                        wx.showToast({
+                          title: errorMessage,
+                          icon: 'none',
+                          duration: 3000
+                        })
+                        hasError = true
+                        break
                       }
-                    } else if (message.type === 'complete') {
-                      // 处理完成消息
-                      that.handleComplete(message)
-                      // 保存结果
-                      result = message.result
-                      // 保存 task_id
-                      if (message.task_id) {
-                        that.setData({ taskId: message.task_id })
-                      }
-                      // 保存 record_id（从 result 中提取）
-                      if (message.result && message.result.record_id) {
-                        const recordId = message.result.record_id || ''
-                        that.setData({ record_id: recordId })
-                        console.log('从result中保存record_id:', recordId)
-                      }
-                    } else if (message.type === 'error') {
-                      // 处理错误消息
-                      that.handleError(message)
-                      hasError = true
-                      break
-                    } else if (message.record_id) {
+                    } else if (message.type === 'record_id') {
                       // 保存record_id到页面数据
                       const recordId = message.record_id || ''
                       that.setData({ record_id: recordId })
                       console.log('保存record_id:', recordId)
+                    } else if (message.type === 'node_complete') {
+                      // 合并node_complete事件中的state数据到result
+                      if (message.state) {
+                        result = { ...result, ...message.state }
+                        console.log('合并state数据后的result:', result)
+                      }
                     }
                   } catch (e) {
                     console.error('单行SSE消息解析失败:', e)
@@ -2474,374 +2384,39 @@ Page({
       },
       fail(error) {
         clearInterval(progressInterval)
+        that.setData({ progress: 100 })
         console.error('API调用失败:', error)
         
-        // 重置状态
-        that.setData({ 
-          progress: 0,
-          isLoading: false
-        })
+        // 检查是否是登录过期或未登录
+        if (error.errMsg && (error.errMsg.includes('登录已过期') || error.errMsg.includes('Unauthorized') || error.errMsg.includes('请先登录'))) {
+          // 鉴权失败，清空上传控件显示
+          that.setData({
+            fileName: '',
+            file_key: '',
+            file_url: '',
+            resumeFile: null
+          })
+          wx.showToast({
+            title: '请先登录',
+            icon: 'none',
+            duration: 3000
+          })
+        } else {
+          wx.showToast({
+            title: `请求失败: ${error.errMsg}`,
+            icon: 'none',
+            duration: 3000
+          })
+        }
         
-        // 隐藏任何加载提示
-        wx.hideLoading()
-        
-        // 显示错误提示
+        // 延迟隐藏进度条，让用户看到完整的进度动画
         setTimeout(() => {
-          // 检查是否是登录过期或未登录
-          if (error.errMsg && (error.errMsg.includes('登录已过期') || error.errMsg.includes('Unauthorized') || error.errMsg.includes('请先登录'))) {
-            // 鉴权失败，清空上传控件显示
-            that.setData({
-              fileName: '',
-              file_key: '',
-              file_url: '',
-              resumeFile: null
-            })
-            wx.showToast({
-              title: '请先登录',
-              icon: 'none',
-              duration: 3000
-            })
-          } else {
-            // 显示失败提示，让用户自主选择重新操作
-            wx.showToast({
-              title: `请求失败，请稍后重试`,
-              icon: 'none',
-              duration: 3000
-            })
-          }
-        }, 100)
+          that.setData({ isLoading: false })
+        }, 500)
       },
       complete() {
         // 移除直接隐藏进度条的代码，改为在success和fail中处理
       }
     })
-  },
-
-  // 队列 API 相关方法
-
-  // 获取队列统计
-  getQueueStatus() {
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${apiBaseUrl}/api/queue/status`,
-        method: 'GET',
-        success: (res) => {
-          if (res.data.success) {
-            // 更新队列总人数到页面数据
-            this.setData({
-              queueTotal: res.data.data.pending_count || 0,
-              queueStats: res.data.data
-            })
-            resolve(res.data.data)
-          } else {
-            reject(res.data.message)
-          }
-        },
-        fail: (err) => {
-          reject(err)
-        }
-      })
-    })
-  },
-
-  // 开始队列状态轮询
-  startQueuePolling() {
-    // 先获取一次队列状态和排队提示
-    this.getQueueStatus().catch(err => {
-      console.error('获取队列状态失败:', err)
-    })
-    
-    this.getQueueTip().catch(err => {
-      console.error('获取排队提示失败:', err)
-    })
-    
-    // 每30秒更新一次队列状态和排队提示
-    this.queuePollInterval = setInterval(() => {
-      this.getQueueStatus().catch(err => {
-        console.error('获取队列状态失败:', err)
-      })
-      
-      this.getQueueTip().catch(err => {
-        console.error('获取排队提示失败:', err)
-      })
-    }, 30000)
-  },
-
-  // 停止队列状态轮询
-  stopQueuePolling() {
-    if (this.queuePollInterval) {
-      clearInterval(this.queuePollInterval)
-      this.queuePollInterval = null
-    }
-  },
-
-  // 获取排队提示
-  getQueueTip() {
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${apiBaseUrl}/api/queue/tip`,
-        method: 'GET',
-        success: (res) => {
-          if (res.data.success) {
-            // 更新排队提示到页面数据
-            this.setData({
-              queueTip: res.data.data.tip || '',
-              estimatedWaitTimeFormatted: res.data.data.estimated_wait_time_formatted || ''
-            })
-            resolve(res.data.data)
-          } else {
-            reject(res.data.message)
-          }
-        },
-        fail: (err) => {
-          reject(err)
-        }
-      })
-    })
-  },
-
-  // 获取任务位置
-  getTaskPosition(taskId) {
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${apiBaseUrl}/api/queue/task/${taskId}/position`,
-        method: 'GET',
-        success: (res) => {
-          if (res.data.success) {
-            resolve(res.data.data)
-          } else {
-            reject(res.data.message)
-          }
-        },
-        fail: (err) => {
-          reject(err)
-        }
-      })
-    })
-  },
-
-  // 取消任务
-  cancelTask() {
-    const { taskId } = this.data
-    if (!taskId) return
-    
-    const app = getApp()
-    const apiBaseUrl = app.globalData.apiBaseUrl
-    
-    wx.request({
-      url: `${apiBaseUrl}/api/queue/task/${taskId}/cancel`,
-      method: 'POST',
-      header: {
-        'Authorization': `Bearer ${wx.getStorageSync('accessToken')}`
-      },
-      success: (res) => {
-        if (res.data.success) {
-          this.stopPoll()
-          this.setData({
-            status: 'CANCELLED',
-            taskId: null
-          })
-          wx.showToast({
-            title: '任务已取消',
-            icon: 'success'
-          })
-        } else {
-          wx.showToast({
-            title: '取消失败，请重试',
-            icon: 'none'
-          })
-        }
-      },
-      fail: (err) => {
-        console.error('取消任务失败:', err)
-        wx.showToast({
-          title: '取消失败，请重试',
-          icon: 'none'
-        })
-      }
-    })
-  },
-
-  // 悬浮框触摸开始事件
-  onFloatBoxTouchStart(e) {
-    // 记录触摸开始位置
-    this.setData({
-      floatBoxDragging: true,
-      floatBoxStartX: e.touches[0].clientX,
-      floatBoxStartY: e.touches[0].clientY
-    })
-  },
-
-  // 悬浮框触摸移动事件
-  onFloatBoxTouchMove(e) {
-    if (!this.data.floatBoxDragging) return
-    
-    // 计算移动距离
-    const deltaX = e.touches[0].clientX - this.data.floatBoxStartX
-    const deltaY = e.touches[0].clientY - this.data.floatBoxStartY
-    
-    // 更新悬浮框位置
-    this.setData({
-      floatBoxPosition: {
-        x: this.data.floatBoxPosition.x + deltaX,
-        y: this.data.floatBoxPosition.y + deltaY
-      },
-      floatBoxStartX: e.touches[0].clientX,
-      floatBoxStartY: e.touches[0].clientY
-    })
-  },
-
-  // 悬浮框触摸结束事件
-  onFloatBoxTouchEnd() {
-    // 结束拖动状态
-    this.setData({
-      floatBoxDragging: false
-    })
-  },
-
-  // 悬浮框点击事件：展开/收起
-  onFloatBoxTap() {
-    // 如果正在拖动，则不处理点击事件
-    if (this.data.floatBoxDragging) return
-    
-    // 切换展开/收起状态
-    this.setData({
-      floatBoxExpanded: !this.data.floatBoxExpanded
-    })
-  },
-
-  // 悬浮框关闭按钮点击事件
-  onFloatBoxClose(e) {
-    // 阻止事件冒泡，避免触发onFloatBoxTap
-    e.stopPropagation()
-    
-    // 收起悬浮框
-    this.setData({
-      floatBoxExpanded: false
-    })
-  },
-
-  // 遮罩层点击事件：关闭悬浮框
-  onFloatBoxOverlayTap() {
-    // 收起悬浮框
-    this.setData({
-      floatBoxExpanded: false
-    })
-  },
-
-  // 开始轮询任务状态
-  startPoll(taskId) {
-    const that = this
-    
-    this.setData({ isPolling: true })
-    
-    const poll = () => {
-      that.getTaskPosition(taskId).then(data => {
-        // 更新状态
-        that.setData({
-          status: data.status,
-          queuePosition: data.position || null,
-          estimatedWaitTime: data.estimated_wait_time || 0,
-          progress: data.progress || 0,
-          progressMessage: data.progress_message || '',
-          result: data.result || that.data.result
-        })
-
-        // 继续轮询或停止
-        if (['QUEUED', 'RUNNING'].includes(data.status)) {
-          that.setData({
-            cancelPoll: setTimeout(poll, 3000)
-          })
-        } else {
-          // 任务结束
-          that.stopPoll()
-          if (data.status === 'SUCCESS') {
-            wx.showToast({
-              title: '分析完成',
-              icon: 'success'
-            })
-          } else if (data.status === 'FAILED') {
-            wx.showToast({
-              title: data.error || '分析失败',
-              icon: 'none'
-            })
-          }
-        }
-      }).catch(err => {
-        console.error('轮询任务状态失败:', err)
-        // 失败时继续轮询
-        that.setData({
-          cancelPoll: setTimeout(poll, 3000)
-        })
-      })
-    }
-
-    poll()
-  },
-
-  // 停止轮询任务状态
-  stopPoll() {
-    const { cancelPoll } = this.data
-    if (cancelPoll) {
-      clearTimeout(cancelPoll)
-      this.setData({
-        cancelPoll: null,
-        isPolling: false
-      })
-    }
-  },
-
-  // 处理进度消息
-  handleProgress(msg) {
-    this.setData({
-      status: 'RUNNING',
-      progress: msg.progress || 0,
-      progressMessage: msg.message || '',
-      queuePosition: msg.queue_position || null
-    })
-  },
-
-  // 处理完成消息
-  handleComplete(msg) {
-    this.stopPoll()
-    this.setData({
-      status: 'SUCCESS',
-      progress: 100,
-      result: msg.result || this.data.result,
-      taskId: msg.task_id || this.data.taskId
-    })
-    
-    wx.showToast({
-      title: '分析完成',
-      icon: 'success'
-    })
-  },
-
-  // 处理错误消息
-  handleError(msg) {
-    this.stopPoll()
-    this.setData({
-      status: 'FAILED',
-      error: msg.error || '分析失败'
-    })
-    
-    wx.showToast({
-      title: msg.error || '分析失败',
-      icon: 'none'
-    })
-  },
-
-  // 页面卸载时停止轮询
-  onUnload() {
-    this.stopPoll()
   }
 })
