@@ -53,7 +53,14 @@ Page({
     floatBoxExpanded: false, // 悬浮框是否展开
     floatBoxDragging: false, // 悬浮框是否正在拖动
     floatBoxStartX: 0,      // 拖动开始X坐标
-    floatBoxStartY: 0       // 拖动开始Y坐标
+    floatBoxStartY: 0,      // 拖动开始Y坐标
+    // 用户使用情况
+    userUsage: {
+      stream_run_remaining: 1,
+      interview_remaining: 1,
+      learning_path_remaining: 1,
+      chat_remaining: 5
+    }
   },
 
   // 职位URL输入事件
@@ -729,9 +736,20 @@ Page({
       return
     }
     
+    // 检查使用次数
+    const { userUsage } = this.data
+    if (userUsage.stream_run_remaining <= 0) {
+      wx.showModal({
+        title: '使用次数已达上限',
+        content: '今日一键生成次数已达上限（1次/天），请明天再来',
+        showCancel: false
+      })
+      return
+    }
+    
     const { jobUrl, file_key, file_url } = this.data
     
-    if (!jobUrl || !file_key) {
+    if (!jobUrl || !file_key || !file_url) {
       wx.showToast({
         title: '请输入职位URL并上传简历',
         icon: 'none'
@@ -1240,6 +1258,49 @@ Page({
     console.log('optimize页面onLoad函数被调用')
     console.log('getApp()返回:', getApp())
     console.log('globalData:', getApp().globalData)
+    this.loadUserUsage() // 加载用户使用情况
+  },
+  
+  // 加载用户使用情况
+  loadUserUsage() {
+    const api = require('../../api/index')
+    const app = getApp()
+    api.loadUserUsage().then(res => {
+      if (res && res.limits) {
+        // 构建用户使用情况对象
+        const userUsage = {
+          stream_run_remaining: 1,
+          interview_remaining: 1,
+          learning_path_remaining: 1,
+          chat_remaining: 5
+        }
+        
+        // 遍历限制信息，更新对应的值
+        res.limits.forEach(limit => {
+          switch (limit.endpoint) {
+            case 'stream_run_async':
+              userUsage.stream_run_remaining = limit.remaining
+              break
+            case 'generate_interview':
+              userUsage.interview_remaining = limit.remaining
+              break
+            case 'generate_learning_path':
+              userUsage.learning_path_remaining = limit.remaining
+              break
+            case 'chat':
+              userUsage.chat_remaining = limit.remaining
+              break
+          }
+        })
+        
+        // 更新全局数据中的用户使用情况
+        app.globalData.userUsage = userUsage
+        // 更新页面数据中的用户使用情况
+        this.setData({ userUsage })
+      }
+    }).catch(error => {
+      console.error('获取用户使用情况失败:', error)
+    })
   },
 
   onReady() {
@@ -1467,6 +1528,20 @@ Page({
           console.log('响应状态码:', res.statusCode)
           console.log('响应数据:', res.data)
           
+          // 检查429错误
+          if (res.statusCode === 429) {
+            clearInterval(progressInterval)
+            this.setData({ isLoading: false })
+            wx.hideLoading()
+            wx.showModal({
+              title: '使用次数已达上限',
+              content: res.data.message || '今日分析岗位次数已达上限，请明天再来',
+              showCancel: false
+            })
+            this.loadUserUsage(); // 刷新使用情况
+            return
+          }
+          
           clearInterval(progressInterval)
           this.setData({ progress: 100 })
           wx.hideLoading()
@@ -1524,7 +1599,6 @@ Page({
             })
             
             // 更新全局数据中的jdText，确保重新生成时使用最新的职位描述
-            const app = getApp()
             app.globalData.jdText = result.jd_text
             
             const jdText = result.jd_text
@@ -1852,7 +1926,7 @@ Page({
   
   // 生成面试话术
   generateInterviewScript() {
-    const { jobInfo, resumeFile } = this.data
+    const { jobInfo, resumeFile, userUsage } = this.data
     
     if (!jobInfo.position_name) {
       wx.showToast({
@@ -1866,6 +1940,16 @@ Page({
       wx.showToast({
         title: '请先上传简历',
         icon: 'none'
+      })
+      return
+    }
+    
+    // 检查使用次数
+    if (userUsage.interview_remaining <= 0) {
+      wx.showModal({
+        title: '使用次数已达上限',
+        content: '今日重新生成面试话术次数已达上限（1次/天），请明天再来',
+        showCancel: false
       })
       return
     }
@@ -1946,6 +2030,20 @@ Page({
         app.globalData.interviewScript = res.interview_script || ''
         app.globalData.jobInfo = jobInfo
         
+        // 乐观更新使用情况
+        const updatedUsage = {
+          ...this.data.userUsage,
+          interview_remaining: Math.max(0, this.data.userUsage.interview_remaining - 1)
+        }
+        this.setData({ userUsage: updatedUsage })
+        // 更新全局数据中的用户使用情况
+        app.globalData.userUsage = updatedUsage
+        
+        // 重新加载准确数据
+        setTimeout(() => {
+          this.loadUserUsage();
+        }, 1000);
+        
         // 显示成功弹框提示
         wx.showToast({
           title: '面试话术重新生成完成',
@@ -1960,17 +2058,29 @@ Page({
     }).catch(error => {
         clearInterval(progressInterval)
         console.error('面试话术生成失败:', error)
-        wx.showToast({
-          title: '生成失败，请稍后重试',
-          icon: 'none'
-        })
+        
+        // 检查429错误
+        if (error.statusCode === 429) {
+          wx.showModal({
+            title: '使用次数已达上限',
+            content: error.data.message || '今日重新生成面试话术次数已达上限，请明天再来',
+            showCancel: false
+          })
+          this.loadUserUsage(); // 刷新使用情况
+        } else {
+          wx.showToast({
+            title: '生成失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+        
         this.setData({ isLoading: false })
     })
   },
   
   // 生成学习计划
   generateLearningPlan() {
-    const { jobInfo, resumeFile } = this.data
+    const { jobInfo, resumeFile, userUsage } = this.data
     
     if (!jobInfo.position_name) {
       wx.showToast({
@@ -1984,6 +2094,16 @@ Page({
       wx.showToast({
         title: '请先上传简历',
         icon: 'none'
+      })
+      return
+    }
+    
+    // 检查使用次数
+    if (userUsage.learning_path_remaining <= 0) {
+      wx.showModal({
+        title: '使用次数已达上限',
+        content: '今日重新生成学习计划次数已达上限（1次/天），请明天再来',
+        showCancel: false
       })
       return
     }
@@ -2064,6 +2184,20 @@ Page({
         app.globalData.learningPlan = res.learning_path || ''
         app.globalData.jobInfo = jobInfo
         
+        // 乐观更新使用情况
+        const updatedUsage = {
+          ...this.data.userUsage,
+          learning_path_remaining: Math.max(0, this.data.userUsage.learning_path_remaining - 1)
+        }
+        this.setData({ userUsage: updatedUsage })
+        // 更新全局数据中的用户使用情况
+        app.globalData.userUsage = updatedUsage
+        
+        // 重新加载准确数据
+        setTimeout(() => {
+          this.loadUserUsage();
+        }, 1000);
+        
         // 显示成功弹框提示
         wx.showToast({
           title: '学习计划重新生成完成',
@@ -2078,10 +2212,22 @@ Page({
     }).catch(error => {
         clearInterval(progressInterval)
         console.error('学习计划生成失败:', error)
-        wx.showToast({
-          title: '生成失败，请稍后重试',
-          icon: 'none'
-        })
+        
+        // 检查429错误
+        if (error.statusCode === 429) {
+          wx.showModal({
+            title: '使用次数已达上限',
+            content: error.data.message || '今日重新生成学习计划次数已达上限，请明天再来',
+            showCancel: false
+          })
+          this.loadUserUsage(); // 刷新使用情况
+        } else {
+          wx.showToast({
+            title: '生成失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+        
         this.setData({ isLoading: false })
     })
   },
@@ -2137,6 +2283,18 @@ Page({
       data: requestData,
       timeout: 1800000, // 30分钟超时，适应长响应时间
       success(res) {
+        // 检查429错误
+        if (res.statusCode === 429) {
+          clearInterval(progressInterval)
+          that.setData({ isLoading: false })
+          wx.showModal({
+            title: '使用次数已达上限',
+            content: res.data.message || '今日一键生成次数已达上限，请明天再来'
+          })
+          that.loadUserUsage(); // 刷新使用情况
+          return
+        }
+        
         clearInterval(progressInterval)
         that.setData({ progress: 100 })
         
@@ -2188,6 +2346,20 @@ Page({
                         that.setData({ record_id: recordId })
                         console.log('从result中保存record_id:', recordId)
                       }
+                      
+                      // 乐观更新使用情况
+                      const updatedUsage = {
+                        ...that.data.userUsage,
+                        stream_run_remaining: Math.max(0, that.data.userUsage.stream_run_remaining - 1)
+                      }
+                      that.setData({ userUsage: updatedUsage })
+                      // 更新全局数据中的用户使用情况
+                      app.globalData.userUsage = updatedUsage
+                      
+                      // 重新加载准确数据
+                      setTimeout(() => {
+                        that.loadUserUsage();
+                      }, 1000);
                     } else if (message.type === 'error') {
                       // 处理错误消息
                       that.handleError(message)
@@ -2714,9 +2886,15 @@ Page({
     if (this.data.floatBoxDragging) return
     
     // 切换展开/收起状态
+    const newExpandedState = !this.data.floatBoxExpanded
     this.setData({
-      floatBoxExpanded: !this.data.floatBoxExpanded
+      floatBoxExpanded: newExpandedState
     })
+    
+    // 如果是展开状态，刷新使用情况数据
+    if (newExpandedState) {
+      this.loadUserUsage()
+    }
   },
 
   // 悬浮框关闭按钮点击事件

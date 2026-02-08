@@ -68,7 +68,8 @@ Page({
   },
 
   onShow() {
-    // 页面显示时重新加载数据，确保数据最新
+    // 页面显示时重置页码并重新加载数据，确保数据最新且无重复
+    this.setData({ page: 1, historyList: [] })
     this.loadHistoryList()
     
     // 检查登录状态并更新用户信息

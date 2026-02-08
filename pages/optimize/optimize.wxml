@@ -259,6 +259,31 @@
         <view class="tip-icon">⚠️</view>
         <view class="tip-text">当前队列人数较多，可能需要较长时间等待，请耐心等待或稍后再来。</view>
       </view>
+      
+      <!-- 使用次数显示 -->
+      <view class="usage-limits">
+        <view class="usage-header">
+          <view class="usage-title">今日剩余次数</view>
+        </view>
+        <view class="usage-list">
+          <view class="usage-item">
+            <view class="usage-label">⚡ 一键生成全部</view>
+            <view class="usage-value">{{userUsage.stream_run_remaining}}/1</view>
+          </view>
+          <view class="usage-item">
+            <view class="usage-label">💬 面试话术</view>
+            <view class="usage-value">{{userUsage.interview_remaining}}/1</view>
+          </view>
+          <view class="usage-item">
+            <view class="usage-label">📅 学习计划</view>
+            <view class="usage-value">{{userUsage.learning_path_remaining}}/1</view>
+          </view>
+          <view class="usage-item">
+            <view class="usage-label">🤖 AI 助手对话</view>
+            <view class="usage-value">{{userUsage.chat_remaining}}/5</view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

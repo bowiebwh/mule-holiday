@@ -194,6 +194,13 @@ App({
     resumeInfo: null,
     beautifiedResume: null,
     interviewScript: null,
-    learningPlan: null
+    learningPlan: null,
+    // 用户使用情况
+    userUsage: {
+      stream_run_remaining: 1,
+      interview_remaining: 1,
+      learning_path_remaining: 1,
+      chat_remaining: 5
+    }
   }
 })

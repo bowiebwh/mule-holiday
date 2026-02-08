@@ -106,7 +106,7 @@ const request = async (url, method, data) => {
               'content-type': 'application/json',
               'Authorization': `Bearer ${accessToken}` // 添加token到请求头
             },
-            timeout: 60000, // 设置60秒超时，适应LLM调用
+            timeout: 120000, // 设置180秒超时，适应LLM调用
             success: (res) => {
               if (res.statusCode === 200) {
                 innerResolve(res.data);
@@ -558,6 +558,14 @@ const batchAnalysis = (data) => {
   return request('/api/ocr/batch-analysis', 'POST', data);
 };
 
+/**
+ * 获取用户使用限制信息
+ * @returns {Promise} - 返回用户使用限制信息
+ */
+const loadUserUsage = () => {
+  return request('/api/usage-limit/my-limits', 'GET');
+};
+
 // 使用CommonJS导出，适配微信小程序
 module.exports = {
   extractJD,
@@ -574,5 +582,6 @@ module.exports = {
   createOCRTask,
   uploadOCRImage,
   getOCRResult,
-  batchAnalysis
+  batchAnalysis,
+  loadUserUsage
 };
