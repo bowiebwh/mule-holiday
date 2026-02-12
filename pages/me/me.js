@@ -58,6 +58,12 @@ Page({
   },
 
   onLoad() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     // 页面加载时的初始化
     this.loadHistoryList()
     
@@ -70,6 +76,12 @@ Page({
   },
 
   onShow() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     // 页面显示时重置页码并重新加载数据，确保数据最新且无重复
     this.setData({ page: 1, historyList: [] })
     this.loadHistoryList()
@@ -1049,5 +1061,23 @@ Page({
         console.log('navigateTo fail:', err)
       }
     })
+  },
+
+  // 分享给好友（必须同时存在，否则朋友圈分享不显示）
+  onShareAppMessage() {
+    return {
+      title: '骡马假日助手',
+      path: '/pages/me/me',
+      imageUrl: '/images/logo.png'
+    };
+  },
+
+  // 分享到朋友圈（基础库 2.11.3+）
+  onShareTimeline() {
+    return {
+      title: '骡马假日助手',           // 朋友圈标题（必填）
+      query: 'from=timeline',   // 携带参数（可选）
+      imageUrl: '/images/logo.png'    // 分享图片（可选）
+    };
   }
 })

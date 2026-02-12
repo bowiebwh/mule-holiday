@@ -1,4 +1,33 @@
 // app.js
+
+// 全局重写 Page 函数，为所有页面添加分享功能
+!function(){
+  var PageTmp = Page;
+  
+  Page = function (pageConfig) {
+    // 无论页面是否定义，都强制添加分享功能
+    // 这样页面可以覆盖，但不覆盖就用默认的
+    
+    pageConfig.onShareAppMessage = pageConfig.onShareAppMessage || function() {
+      return {
+        title: '骡马假日助手',
+        path: '/pages/optimize/optimize',  // 默认首页
+        imageUrl: '/images/logo.png'
+      };
+    };
+    
+    pageConfig.onShareTimeline = pageConfig.onShareTimeline || function() {
+      return {
+        title: '骡马假日助手',
+        query: 'from=timeline',
+        imageUrl: '/images/logo.png'
+      };
+    };
+    
+    PageTmp(pageConfig);
+  };
+}();
+
 App({
   onLaunch() {
     // 展示本地存储能力
@@ -17,6 +46,8 @@ App({
     if (accessToken) {
       console.log('使用本地存储的token登录')
     }
+    
+    // 注意：wx.showShareMenu 已移至页面级别调用
   },
   
   // 显示免责声明弹窗

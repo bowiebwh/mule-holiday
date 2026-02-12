@@ -58,6 +58,12 @@ Page({
 
   // 页面加载时的初始化
   onLoad() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     this.setData({
       isSendButtonEnabled: false
     })
@@ -108,6 +114,12 @@ Page({
   
   // 页面显示时获取对话历史
   onShow() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     // 从本地存储获取当前会话ID
     const currentSessionId = wx.getStorageSync('currentSessionId')
     // 检查登录状态
@@ -611,5 +623,23 @@ Page({
         }
       })
     }
+  },
+
+  // 分享给好友（必须同时存在，否则朋友圈分享不显示）
+  onShareAppMessage() {
+    return {
+      title: '骡马假日助手',
+      path: '/pages/chat/chat',
+      imageUrl: '/images/logo.png'
+    };
+  },
+
+  // 分享到朋友圈（基础库 2.11.3+）
+  onShareTimeline() {
+    return {
+      title: '骡马假日助手',           // 朋友圈标题（必填）
+      query: 'from=timeline',   // 携带参数（可选）
+      imageUrl: '/images/logo.png'    // 分享图片（可选）
+    };
   }
 })

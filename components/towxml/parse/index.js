@@ -69,6 +69,22 @@ const parse2 = require('./parse2/index'),
 
                     o.attr.class = o.attr.class ? `h2w__${item.name} ${o.attr.class}` : `h2w__${item.name}`;
 
+                    // 处理a标签的href属性，转换为navigator的url属性
+                    if(item.name === 'a'){
+                        if(o.attr.href && o.attr.href.trim() !== ''){
+                            // 直接使用view组件，添加点击事件处理外部链接
+                            o.tag = 'view';
+                            // 添加data-url属性，存储链接地址
+                            o.attr['data-url'] = o.attr.href;
+                            // 添加点击事件处理器
+                            o.attr['catch:tap'] = '_handleLinkClick';
+                            delete o.attr.href;
+                        } else {
+                            // 如果没有有效的href属性，将标签改为view
+                            o.tag = 'view';
+                        }
+                    }
+
                     // 处理资源相对路径
                     if(base && o.attr.src){
                         let src = o.attr.src;

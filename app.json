@@ -5,7 +5,8 @@
     "pages/learning/learning",
     "pages/chat/chat",
     "pages/me/me",
-    "pages/profile-edit/profile-edit"
+    "pages/profile-edit/profile-edit",
+    "pages/webview/webview"
   ],
   "window": {
     "backgroundTextStyle": "light",

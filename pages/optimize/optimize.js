@@ -1255,6 +1255,12 @@ Page({
   },
 
   onLoad() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     // 页面加载时的初始化
     console.log('optimize页面onLoad函数被调用')
     console.log('getApp()返回:', getApp())
@@ -1313,6 +1319,12 @@ Page({
     // 页面显示时的操作
     console.log('optimize页面onShow函数被调用')
     
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
+    })
+    
     // 检查登录状态，如果未登录则清除页面数据
     const accessToken = wx.getStorageSync('accessToken')
     const isLoggedIn = !!accessToken
@@ -1353,6 +1365,24 @@ Page({
       // 已登录，开始队列状态轮询
       this.startQueuePolling()
     }
+  },
+
+  // 分享给好友（必须同时存在，否则朋友圈分享不显示）
+  onShareAppMessage() {
+    return {
+      title: '骡马假日助手',
+      path: '/pages/optimize/optimize',
+      imageUrl: '/images/logo.png'
+    };
+  },
+
+  // 分享到朋友圈（必须同时存在，否则朋友圈分享不显示）
+  onShareTimeline() {
+    return {
+      title: '骡马假日助手',
+      query: 'from=timeline',  // 携带的参数
+      imageUrl: '/images/logo.png'
+    };
   },
 
   onHide() {
