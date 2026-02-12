@@ -97,6 +97,10 @@
       </view>
       <view class="download-icon">📥</view>
     </view>
+    <!-- 真实性提醒 -->
+    <view class="authenticity-reminder" wx:if="{{isSubmitCalled}}">
+      ⚠️注意：如生成的量化结果与实际不符，请用户自行调整为真实情况。
+    </view>
   </view>
 
   <view class="section" wx:if="{{isSubmitCalled && (jobInfo.position_name || fileName)}}">

@@ -977,3 +977,12 @@
 .usage-item.usage-exhausted .usage-value {
   color: #ef4444;
 }
+
+/* 真实性提醒样式 */
+.authenticity-reminder {
+  font-size: 24rpx;
+  color: #92400e;
+  line-height: 36rpx;
+  margin-top: 16rpx;
+  padding: 0;
+}
