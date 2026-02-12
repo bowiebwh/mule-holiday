@@ -1,4 +1,11 @@
 <view class="container">
+  <!-- 免责声明弹窗组件 -->
+  <disclaimer 
+    visible="{{showDisclaimerModal}}"
+    bind:confirm="onDisclaimerConfirm"
+    bind:close="onDisclaimerClose"
+  />
+
   <!-- 用户信息栏 -->
   <view class="user-info-bar">
     <block wx:if="{{userInfo.isLogin}}">
@@ -45,6 +52,8 @@
       <image class="feedback-icon" src="/images/speak.png" mode="aspectFit"></image>
     </view>
   </view>
+
+
 
   <!-- 历史记录标题 -->
   <view class="section-title">历史记录</view>

@@ -986,3 +986,58 @@ button.submit-btn::after {
 .success-btn:hover {
   background-color: #2563eb;
 }
+
+/* 服务说明样式 */
+.user-section {
+  margin-bottom: 40rpx;
+  padding: 24rpx;
+  background-color: white;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 24rpx;
+  padding-left: 10rpx;
+  border-left: 6rpx solid #1a73e8;
+}
+
+.disclaimer-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.disclaimer-item:last-child {
+  border-bottom: none;
+}
+
+.disclaimer-item:hover {
+  background-color: #f9fafb;
+  border-radius: 8rpx;
+}
+
+.disclaimer-item .icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.disclaimer-item .text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #374151;
+}
+
+.disclaimer-item .arrow {
+  font-size: 32rpx;
+  color: #9ca3af;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}

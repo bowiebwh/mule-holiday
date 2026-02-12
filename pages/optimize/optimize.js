@@ -13,6 +13,7 @@ Page({
     progress: 0,
     record_id: '', // 用于保存从SSE消息中获取的真实record_id
     isSubmitCalled: false, // 用于跟踪是否调用过一键生成全部按钮
+    isLoggedIn: false, // 登录状态
     jobInfo: {
       position_name: '',
       job_type: '',
@@ -1314,7 +1315,9 @@ Page({
     
     // 检查登录状态，如果未登录则清除页面数据
     const accessToken = wx.getStorageSync('accessToken')
-    if (!accessToken) {
+    const isLoggedIn = !!accessToken
+    
+    if (!isLoggedIn) {
       console.log('未登录，清除页面数据')
       this.setData({
         jobUrl: '',
@@ -1326,6 +1329,7 @@ Page({
         progress: 0,
         record_id: '',
         isSubmitCalled: false,
+        isLoggedIn: false,
         jobInfo: {
           position_name: '',
           job_type: '',
@@ -1342,6 +1346,10 @@ Page({
         }
       })
     } else {
+      console.log('已登录，开始队列状态轮询')
+      this.setData({
+        isLoggedIn: true
+      })
       // 已登录，开始队列状态轮询
       this.startQueuePolling()
     }

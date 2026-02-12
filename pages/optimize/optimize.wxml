@@ -154,7 +154,7 @@
 <!-- 遮罩层：点击别处关闭悬浮框 -->
 <view 
   class="float-box-overlay" 
-  wx:if="{{floatBoxExpanded}}"
+  wx:if="{{isLoggedIn && floatBoxExpanded}}"
   catchtap="onFloatBoxOverlayTap"
 ></view>
 
@@ -166,6 +166,7 @@
   bindtouchmove="onFloatBoxTouchMove"
   bindtouchend="onFloatBoxTouchEnd"
   bindtap="onFloatBoxTap"
+  wx:if="{{isLoggedIn}}"
 >
   <!-- 基础状态：显示队列总人数 -->
   <view class="float-box-base" wx:if="{{!floatBoxExpanded}}">

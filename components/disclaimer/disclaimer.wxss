@@ -1,0 +1,193 @@
+/* 免责声明弹窗样式 */
+.disclaimer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+/* 遮罩层 */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* 弹窗内容 */
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-height: 80vh;
+  background-color: white;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+/* 弹窗动画 */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 标题区域 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+  background-color: #f8f9fa;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+}
+
+.warning-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.modal-title {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+
+
+/* 内容区域 */
+.modal-body {
+  flex: 1;
+  padding: 0 24rpx;
+  overflow-y: auto;
+  max-height: 40vh;
+}
+
+.modal-text {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 20rpx;
+}
+
+/* 免责声明列表 */
+.disclaimer-list {
+  margin-top: 5rpx;
+  margin-bottom: 5rpx;
+}
+
+.disclaimer-item {
+  display: flex;
+  flex-direction: column;
+  padding: 2px;
+}
+
+.item-number {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.item-text {
+  font-size: 24rpx;
+  color: #333;
+  line-height: 1.4;
+  flex: 1;
+  margin-bottom: 8rpx;
+}
+
+/* 子项样式 */
+.sub-item {
+  display: flex;
+  align-items: flex-start;
+  margin-left: 40rpx;
+  margin-bottom: 6rpx;
+}
+
+.sub-item-bullet {
+  font-size: 24rpx;
+  color: #666;
+  margin-right: 10rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.sub-item-text {
+  font-size: 22rpx;
+  color: #666;
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* 底部文字 */
+.modal-footer-text {
+  font-size: 22rpx;
+  color: #999;
+  line-height: 1.4;
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+/* 按钮区域 */
+.modal-footer {
+  padding: 24rpx 32rpx;
+  border-top: 2rpx solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 24rpx;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3);
+}
+
+.confirm-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.4);
+}
+
+/* 滚动条样式 */
+.modal-body::-webkit-scrollbar {
+  width: 6rpx;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3rpx;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3rpx;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}

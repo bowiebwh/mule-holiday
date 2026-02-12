@@ -46,6 +46,8 @@ Page({
     // 反馈相关状态
     showFeedback: false, // 是否显示反馈表单
     showSuccess: false, // 是否显示成功提示
+    // 免责声明弹窗状态
+    showDisclaimerModal: false, // 是否显示免责声明弹窗
     feedbackData: {
       feedback_type: 'bug',
       title: '',
@@ -324,18 +326,34 @@ Page({
         }
       })
     } else {
-      // 登录逻辑：使用wx.getUserProfile获取用户信息
-      wx.getUserProfile({
-        desc: '用于完善会员资料', // 声明获取用户信息的用途，必填
-        success: (res) => {
-          // 用户授权成功，获取用户信息
-          const userInfo = res.userInfo
-          console.log('用户授权成功，获取到的用户信息:', userInfo)
+      // 检查是否已阅读免责声明
+      const hasReadDisclaimer = wx.getStorageSync('disclaimer_read')
+      if (!hasReadDisclaimer) {
+        // 显示自定义免责声明组件
+        this.setData({ showDisclaimerModal: true })
+      } else {
+        // 已阅读免责声明，直接执行登录流程
+        this.doLogin()
+      }
+    }
+  },
+
+  // 执行登录流程
+  doLogin() {
+    const app = getApp()
+    
+    // 使用wx.getUserProfile获取用户信息
+    wx.getUserProfile({
+      desc: '用于完善会员资料', // 声明获取用户信息的用途，必填
+      success: (res) => {
+        // 用户授权成功，获取用户信息
+        const userInfo = res.userInfo
+        console.log('用户授权成功，获取到的用户信息:', userInfo)
+        
+        // 调用登录方法，传递用户信息
+        app.login(userInfo).then(res => {
+          // 登录成功
           
-          // 调用登录方法，传递用户信息
-          app.login(userInfo).then(res => {
-            // 登录成功
-            
           // 获取全局用户信息
           const globalUserInfo = app.globalData.userInfo || {};
           console.log('登录成功后获取的全局用户信息:', globalUserInfo);
@@ -382,26 +400,25 @@ Page({
             // 登录成功后刷新历史记录列表
             this.loadHistoryList()
           }
-          }).catch(err => {
-            // 登录失败
-            console.error('登录失败:', err);
-            // 显示失败提示
-            wx.showToast({
-              title: '登录失败',
-              icon: 'none'
-            });
-          })
-        },
-        fail: (err) => {
-          // 用户拒绝授权
-          console.log('用户拒绝授权:', err);
+        }).catch(err => {
+          // 登录失败
+          console.error('登录失败:', err);
+          // 显示失败提示
           wx.showToast({
-            title: '授权失败，请允许授权后重试',
+            title: '登录失败',
             icon: 'none'
           });
-        }
-      })
-    }
+        })
+      },
+      fail: (err) => {
+        // 用户拒绝授权
+        console.log('用户拒绝授权:', err);
+        wx.showToast({
+          title: '授权失败，请允许授权后重试',
+          icon: 'none'
+        });
+      }
+    })
   },
 
   // 加载更多数据
@@ -554,6 +571,28 @@ Page({
   showSuccessToast() {
     this.setData({
       showSuccess: true
+    })
+  },
+
+
+
+  // 免责声明确认
+  onDisclaimerConfirm() {
+    console.log('用户已了解免责声明与隐私政策')
+    // 标记为已读
+    wx.setStorageSync('disclaimer_read', true)
+    this.setData({
+      showDisclaimerModal: false
+    })
+    // 继续执行登录流程
+    this.doLogin()
+  },
+
+  // 免责声明关闭
+  onDisclaimerClose() {
+    console.log('用户关闭免责声明')
+    this.setData({
+      showDisclaimerModal: false
     })
   },
 
