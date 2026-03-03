@@ -1899,19 +1899,15 @@ Page({
   
   // 下载优化后的简历
   downloadBeautifiedResume() {
-    const { result } = this.data
+    const { record_id } = this.data
     const app = getApp()
     
     wx.showLoading({
       title: '正在下载简历...',
     })
     
-    // 检查是否有直接的下载链接
-    let downloadUrl = result.beautified_resume_url
-    
-    // 如果没有直接下载链接，可以考虑使用其他方式生成下载链接
-    if (!downloadUrl) {
-      // 这里可以添加默认的下载链接或提示
+    // 检查是否有record_id
+    if (!record_id) {
       wx.hideLoading()
       wx.showToast({
         title: '暂无法下载简历',
@@ -1919,6 +1915,9 @@ Page({
       })
       return
     }
+    
+    // 通过后端代理接口下载文件
+    const downloadUrl = `${app.globalData.apiBaseUrl}/api/download?record_id=${record_id}`
     
     // 下载文件
     wx.downloadFile({

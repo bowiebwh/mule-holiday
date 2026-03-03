@@ -249,7 +249,8 @@ App({
   
   globalData: {
     userInfo: null,
-    apiBaseUrl: 'https://h7fs9pqcvf.coze.site',
+    //apiBaseUrl: 'https://h7fs9pqcvf.coze.site',
+    apiBaseUrl: 'https://muleholiday.cn',
     // 存储临时数据
     jobInfo: null,
     resumeInfo: null,

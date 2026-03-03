@@ -82,12 +82,11 @@ Page({
       menus: ['shareAppMessage', 'shareTimeline']  // 同时开启好友和朋友圈分享
     })
     
-    // 页面显示时重置页码并重新加载数据，确保数据最新且无重复
-    this.setData({ page: 1, historyList: [] })
-    this.loadHistoryList()
-    
     // 检查登录状态并更新用户信息
     this.checkLoginStatus()
+    
+    // 页面显示时刷新数据，确保数据最新
+    this.loadHistoryList()
   },
   
   onTabItemTap() {
@@ -166,12 +165,15 @@ Page({
       return
     }
     
-    if (this.data.isLoading || !this.data.hasMore) {
+    if (this.data.isLoading) {
       return
     }
 
+    // 每次加载时重置为第一页，确保获取最新数据
     this.setData({
-      isLoading: true
+      isLoading: true,
+      page: 1,
+      hasMore: true
     })
 
     const app = getApp()
@@ -710,8 +712,9 @@ Page({
   downloadHistoryResume(e) {
     const id = e.currentTarget.dataset.id
     const historyItem = this.data.historyList.find(item => item.id === id)
+    const app = getApp()
     
-    if (!historyItem || !historyItem.fullData.beautified_resume_url) {
+    if (!historyItem) {
       wx.showToast({
         title: '暂无法下载简历',
         icon: 'none'
@@ -719,7 +722,8 @@ Page({
       return
     }
     
-    const downloadUrl = historyItem.fullData.beautified_resume_url.trim()
+    // 通过后端代理接口下载文件
+    const downloadUrl = `${app.globalData.apiBaseUrl}/api/download?record_id=${id}`
     
     wx.showLoading({
       title: '正在下载简历...',
