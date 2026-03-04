@@ -36,22 +36,27 @@
       </scroll-view>
       
       <view class="chat-input">
-        <view class="textarea-container">
-          <textarea 
+        <view class="input-row">
+          <view class="textarea-container">
+            <textarea 
             class="input-text"
             bindinput="onChatInput" 
             value="{{inputMessage}}" 
             bindconfirm="sendChatMessage"
+            bindlinechange="onLineChange"
+            placeholder="请输入您的问题..."
+            placeholder-style="color: #d1d5db; font-size: 26rpx; line-height: 40rpx;"
             auto-height="true"
             style="min-height: 80rpx; max-height: 200rpx;"
           />
-          <view wx:if="{{!inputMessage}}" class="custom-placeholder">请输入您的问题...</view>
+          </view>
+          <image 
+            class="send-btn {{isSendButtonEnabled ? '' : 'disabled'}}" 
+            src="/images/send.png" 
+            bindtap="sendChatMessage"
+          />
         </view>
-        <image 
-          class="send-btn {{isSendButtonEnabled ? '' : 'disabled'}}" 
-          src="/images/send.png" 
-          bindtap="sendChatMessage"
-        />
+        <text class="ai-disclaimer">内容由AI生成，仅供参考</text>
       </view>
     </view>
   </view>

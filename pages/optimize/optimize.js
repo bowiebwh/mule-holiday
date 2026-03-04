@@ -1372,7 +1372,7 @@ Page({
     return {
       title: '骡马假日助手',
       path: '/pages/optimize/optimize',
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.jpg'
     };
   },
 
@@ -1381,7 +1381,7 @@ Page({
     return {
       title: '骡马假日助手',
       query: 'from=timeline',  // 携带的参数
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.jpg'
     };
   },
 

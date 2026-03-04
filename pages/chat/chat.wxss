@@ -34,66 +34,29 @@
   }
 }
 
-/* 优化聊天输入框样式 */
-.input-text {
-  margin-bottom: 0 !important;
-  margin-right: 20rpx !important;
-  padding: 20rpx 30rpx !important;
-  min-height: 80rpx !important;
-  max-height: 200rpx !important;
-  border-radius: 16rpx !important;
-  font-size: 28rpx !important;
-  line-height: 40rpx !important; /* 调整行高，适应多行文本 */
-  background-color: #f8f9fa !important;
-  border: 1rpx solid #e5e7eb !important;
-  box-sizing: border-box !important;
-  transition: none !important; /* 禁用过渡动画，避免输入时闪动 */
-  resize: none !important; /* 禁用手动调整大小 */
-}
-
 /* 输入框占位符样式 */
-.input-placeholder {
-  font-size: 26rpx !important;
-  color: #d1d5db !important;
-  line-height: 80rpx !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 100% !important;
-}
-
-/* 当输入框获得焦点时隐藏占位符 */
-.input-text:focus .input-placeholder {
-  display: none !important;
-}
-
-/* 同时保留原有伪元素样式，确保兼容性 */
 .input-text::placeholder {
-  font-size: 26rpx !important;
-  color: #d1d5db !important;
-  line-height: 80rpx !important;
+  font-size: 26rpx;
+  color: #d1d5db;
+  line-height: 40rpx;
 }
 
-/* 当输入框获得焦点时，隐藏伪元素占位符 */
-.input-text:focus::placeholder {
-  opacity: 0 !important;
-  transition: opacity 0.2s ease !important;
-}
-
-/* 优化发送按钮样式 */
+/* 发送按钮样式 */
 .send-btn {
-  width: 80rpx !important;
-  height: 80rpx !important;
-  opacity: 1 !important;
-  filter: none !important;
-  transition: none !important; /* 禁用过渡动画，避免状态变化时闪动 */
+  width: 80rpx;
+  height: 80rpx;
+  opacity: 1;
+  filter: none;
+  transition: all 0.2s ease;
+  margin-top: 15rpx;
+  margin-left: 16rpx;
 }
 
 .send-btn.disabled {
-  opacity: 0.3 !important;
-  filter: grayscale(100%) !important;
-  pointer-events: none !important;
-  transition: none !important; /* 禁用过渡动画，避免状态变化时闪动 */
+  opacity: 0.3;
+  filter: grayscale(100%);
+  pointer-events: none;
+  transition: all 0.2s ease;
 }
 
 /* 对话历史区域样式 */
@@ -411,31 +374,49 @@ page {
   padding-bottom: 60rpx !important;
 }
 
-/* 自定义占位符容器样式 */
+/* 输入框容器样式 */
 .textarea-container {
-  position: relative !important;
-  flex: 1 !important;
-  margin-right: 20rpx !important;
+  flex: 1;
+  margin-right: 16rpx;
 }
 
-/* 自定义占位符样式 */
-.custom-placeholder {
-  position: absolute !important;
-  top: 20rpx !important;
-  left: 30rpx !important;
-  color: #d1d5db !important;
-  font-size: 26rpx !important;
-  line-height: 40rpx !important;
-  pointer-events: none !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* 调整输入框样式，确保与自定义占位符兼容 */
+/* 输入框样式 */
 .textarea-container .input-text {
-  margin-right: 0 !important;
-  min-height: 80rpx !important;
-  max-height: 200rpx !important;
-  border-radius: 16rpx !important;
+  width: 100%;
+  min-height: 60rpx;
+  max-height: 200rpx;
+  border-radius: 16rpx;
+  padding: 20rpx 30rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  background-color: #f8f9fa;
+  border: 1rpx solid #e5e7eb;
+  box-sizing: border-box;
+  resize: none;
+  overflow-y: auto;
+  margin: 0
+}
+
+/* 聊天输入区域样式 */
+.chat-input {
+  display: flex;
+  flex-direction: column;
+  padding: 8rpx;
+  background-color: #fff;
+  border-top: 1rpx solid #e5e7eb;
+}
+
+/* 输入框和发送按钮容器 */
+.input-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* AI免责声明样式 */
+.ai-disclaimer {
+  font-size: 18rpx;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 16rpx;
 }

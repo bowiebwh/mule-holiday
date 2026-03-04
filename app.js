@@ -12,7 +12,7 @@
       return {
         title: '骡马假日助手',
         path: '/pages/optimize/optimize',  // 默认首页
-        imageUrl: '/images/logo.png'
+        imageUrl: '/images/logo.jpg'
       };
     };
     
@@ -20,7 +20,7 @@
       return {
         title: '骡马假日助手',
         query: 'from=timeline',
-        imageUrl: '/images/logo.png'
+        imageUrl: '/images/logo.jpg'
       };
     };
     

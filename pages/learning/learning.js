@@ -308,7 +308,7 @@ Page({
     return {
       title: '骡马假日助手',
       path: '/pages/learning/learning',
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.jpg'
     };
   },
 
@@ -317,7 +317,7 @@ Page({
     return {
       title: '骡马假日助手',           // 朋友圈标题（必填）
       query: 'from=timeline',   // 携带参数（可选）
-      imageUrl: '/images/logo.png'    // 分享图片（可选）
+      imageUrl: '/images/logo.jpg'    // 分享图片（可选）
     };
   }
 })

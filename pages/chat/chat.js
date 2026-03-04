@@ -383,6 +383,40 @@ Page({
       inputMessage: value,
       isSendButtonEnabled: !!value.trim()
     })
+    
+    // 当输入内容为空时，重置输入框高度
+    if (!value.trim()) {
+      this.resetTextareaHeight()
+    }
+  },
+  
+  // 重置输入框高度
+  resetTextareaHeight() {
+    // 获取textarea元素
+    const query = wx.createSelectorQuery()
+    query.select('.textarea-container .input-text').node().exec((res) => {
+      if (res && res[0] && res[0].node) {
+        const textarea = res[0].node
+        // 保存当前值
+        const currentValue = textarea.value
+        // 清空内容
+        textarea.value = ''
+        // 触发输入事件
+        textarea.dispatchEvent(new Event('input'))
+        // 恢复内容
+        textarea.value = currentValue
+        // 触发输入事件
+        textarea.dispatchEvent(new Event('input'))
+      }
+    })
+  },
+  
+  // 输入框行数变化事件
+  onLineChange(e) {
+    // 当输入内容为空时，重置输入框高度
+    if (!this.data.inputMessage.trim()) {
+      this.resetTextareaHeight()
+    }
   },
 
   // 发送聊天消息
@@ -630,7 +664,7 @@ Page({
     return {
       title: '骡马假日助手',
       path: '/pages/chat/chat',
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.jpg'
     };
   },
 
@@ -639,7 +673,7 @@ Page({
     return {
       title: '骡马假日助手',           // 朋友圈标题（必填）
       query: 'from=timeline',   // 携带参数（可选）
-      imageUrl: '/images/logo.png'    // 分享图片（可选）
+      imageUrl: '/images/logo.jpg'    // 分享图片（可选）
     };
   }
 })

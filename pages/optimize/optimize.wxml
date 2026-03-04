@@ -142,6 +142,7 @@
     <text wx:if="{{isLoading}}">处理中...</text>
     <text wx:else>⚡ 一键生成全部</text>
   </button>
+  <text class="ai-disclaimer">内容由AI生成，仅供参考</text>
 </view>
 
 <!-- 一键清除按钮，在一键生成全部调用完成后显示 -->
